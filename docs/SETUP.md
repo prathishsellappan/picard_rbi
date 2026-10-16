@@ -168,10 +168,45 @@ and contract address only).
 31337 (or press **Switch to Local Hardhat**, which offers to add it). Then import the participant's
 Hardhat dev account. These keys are public test keys for local use only.
 
-## What is still mock
+## Indexer and explorer (Stage 6)
 
-The mule's incoming-transfer list and the explorer still show **mock** or placeholder data, and
-each is labelled. They arrive with the indexer in Stage 6. Everything else is real.
+A plain RPC endpoint can't list an address's transaction history, so a small indexer copies the
+scenario's activity into Postgres (`chain_txs`, `chain_events`):
+
+- **Transactions:** every transaction sent from or to one of the 17 scenario addresses or a scenario
+  contract, plus the contracts' own deployment transactions. It finds them by scanning each block
+  from the scenario's deploy block.
+- **Events:** every event from the factory, marketplace, NFT and all project contracts.
+- **Internal ETH movements:** marketplace → project and project → creator happen inside other
+  transactions. The explorer shows them as internal transfers, rebuilt from `FundsReceived` and
+  `Withdrawn` events.
+
+Run it while the role-play is live:
+
+```bash
+npm run indexer          # keeps polling for new blocks (Ctrl+C to stop)
+npm run indexer -- --once
+```
+
+The organizer overview also has **Sync index now**, which runs the same indexer once to the chain
+head, and a participant-progress table built from the index. The indexer is idempotent: it stores
+each block range in one transaction and only then moves its cursor. On Sepolia it stays 3 blocks
+behind the head, so a small reorg can't leave bad rows.
+
+**Explorer** (any logged-in user, under **Explorer**):
+- Search by address or transaction hash.
+- Directory of scenario addresses and contracts.
+- Latest transactions.
+- Address pages: live balance, incoming and outgoing transactions, internal ETH movements, NFT
+  transfers, and events emitted by a contract.
+- Transaction pages, **read live from the chain**: status, block, timestamp, from/to, value,
+  method, gas, decoded scenario events, and internal movements.
+- On Sepolia, every address and transaction links to Etherscan.
+
+Labels are neutral: participant IDs (`P01`…), `Exchange 1`/`Exchange 2`, contract names and
+`Project: <name>`. Roles, instructions and the malicious flag never appear.
+
+The mule dashboard's **Incoming transfers** list comes from the same index.
 
 ## Event-day device setup (Option A)
 

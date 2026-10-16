@@ -137,3 +137,6 @@ Application state and the blockchain mirror are kept separate. Mirror tables (`c
 - Wallet logic lives in `web/components/wallet/` (MetaMask provider, wallet panel, transaction hook)
   with pure rules in `web/lib/wallet/`. Server-side verification of reported transactions is in
   `web/lib/tx-verify.ts`, and the RPC connection (chain-ID checked) is in `web/lib/chain.ts`.
+- The indexer core (`web/indexer/core.ts`) has no Next.js imports, so the CLI runner
+  (`web/scripts/indexer.ts`) and the organizer's sync route share it. Explorer queries live in
+  `web/lib/explorer.ts`. Lists come from the index; single-transaction pages read the chain directly.

@@ -1,5 +1,5 @@
 import "server-only";
-import { Pool, type QueryResultRow } from "pg";
+import { Pool, type PoolClient, type QueryResultRow } from "pg";
 import { getServerConfig } from "./config";
 
 // One pool per server process. Kept on globalThis so dev hot-reload doesn't leak connections.
@@ -36,6 +36,16 @@ export async function transaction<T>(fn: (q: QueryFn) => Promise<T>): Promise<T>
   } catch (error) {
     await client.query("ROLLBACK");
     throw error;
+  } finally {
+    client.release();
+  }
+}
+
+// Runs fn with one dedicated connection (for code that manages its own BEGIN/COMMIT).
+export async function withClient<T>(fn: (client: PoolClient) => Promise<T>): Promise<T> {
+  const client = await getPool().connect();
+  try {
+    return await fn(client);
   } finally {
     client.release();
   }

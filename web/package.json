@@ -11,7 +11,8 @@
     "typecheck": "tsc --noEmit",
     "test": "vitest run",
     "db:migrate": "node --env-file-if-exists=.env.local scripts/migrate.ts",
-    "db:seed": "node --env-file-if-exists=.env.local scripts/seed-local.ts"
+    "db:seed": "node --env-file-if-exists=.env.local scripts/seed-local.ts",
+    "indexer": "node --env-file-if-exists=.env.local scripts/indexer.ts"
   },
   "dependencies": {
     "ethers": "^6.17.0",

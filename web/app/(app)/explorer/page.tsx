@@ -1,45 +1,70 @@
-import { Card, MockNotice, PageTitle, StatusBadge, inputClass } from "@/components/ui";
+import { redirect } from "next/navigation";
+import { IndexerStatusLine } from "@/components/explorer/IndexerStatusLine";
+import { AddressLink } from "@/components/explorer/links";
+import { TxTable } from "@/components/explorer/TxTable";
+import { Card, PageTitle, buttonClass, inputClass } from "@/components/ui";
 import { requireUser } from "@/lib/auth";
-import { MOCK_TXS } from "@/lib/mock-chain";
+import { getActiveScenario } from "@/lib/data/scenario";
+import { getIndexerStatus, getLabels, recentTxs } from "@/lib/explorer";
 
-export default async function ExplorerPage() {
+function searchTarget(q: string): string | null {
+  const value = q.trim();
+  if (/^0x[0-9a-fA-F]{64}$/.test(value)) return `/explorer/tx/${value.toLowerCase()}`;
+  if (/^0x[0-9a-fA-F]{40}$/.test(value)) return `/explorer/address/${value}`;
+  return null;
+}
+
+export default async function ExplorerPage({ searchParams }: { searchParams: Promise<{ q?: string }> }) {
   await requireUser();
+  const { q } = await searchParams;
+  let searchError: string | null = null;
+  if (q) {
+    const target = searchTarget(q);
+    if (target) redirect(target);
+    searchError = "Enter a full wallet/contract address (0x + 40 hex characters) or transaction hash (0x + 64).";
+  }
+
+  const scenario = await getActiveScenario();
+  if (!scenario) return <PageTitle title="Explorer" subtitle="No active scenario." />;
+  const [labels, txs, status] = await Promise.all([
+    getLabels(scenario.id),
+    recentTxs(scenario.id, 50),
+    getIndexerStatus(scenario.id),
+  ]);
+  const directory = [...labels.entries()].sort((a, b) => a[1].localeCompare(b[1], undefined, { numeric: true }));
 
   return (
     <>
-      <PageTitle title="Explorer" subtitle="Scenario wallets, transactions, and NFT events" />
-      <MockNotice>The indexer and real search arrive in Stage 6.</MockNotice>
-      <input disabled className={`${inputClass} mb-4 opacity-60`} placeholder="Search address or transaction hash" />
-      <Card title="Recent scenario transactions">
-        <div className="overflow-x-auto">
-          <table className="w-full text-left text-sm">
-            <thead className="text-xs uppercase text-slate-500">
-              <tr>
-                <th className="py-2 pr-3">Block</th>
-                <th className="py-2 pr-3">Tx</th>
-                <th className="py-2 pr-3">From</th>
-                <th className="py-2 pr-3">To</th>
-                <th className="py-2 pr-3">Value</th>
-                <th className="py-2 pr-3">Status</th>
-              </tr>
-            </thead>
-            <tbody>
-              {MOCK_TXS.map((tx) => (
-                <tr key={tx.hash} className="border-t border-slate-100">
-                  <td className="py-2 pr-3">{tx.blockNumber}</td>
-                  <td className="py-2 pr-3 font-mono text-xs">{tx.hash}</td>
-                  <td className="py-2 pr-3">{tx.fromLabel}</td>
-                  <td className="py-2 pr-3">{tx.toLabel}</td>
-                  <td className="py-2 pr-3">{tx.valueEth} ETH</td>
-                  <td className="py-2 pr-3">
-                    <StatusBadge status={tx.status} />
-                  </td>
-                </tr>
-              ))}
-            </tbody>
-          </table>
-        </div>
-      </Card>
+      <PageTitle title="Explorer" subtitle="Scenario wallets, contracts, transactions, and NFT events" />
+      <form action="/explorer" method="get" className="mb-2 flex gap-2">
+        <input
+          name="q"
+          defaultValue={q}
+          className={`${inputClass} font-mono`}
+          placeholder="Search address or transaction hash"
+          aria-label="Search"
+        />
+        <button type="submit" className={buttonClass}>
+          Search
+        </button>
+      </form>
+      {searchError && <p className="mb-2 text-sm text-red-700">{searchError}</p>}
+      <IndexerStatusLine status={status} />
+
+      <div className="mt-6 grid gap-4">
+        <Card title="Scenario addresses">
+          <ul className="grid gap-1 text-sm sm:grid-cols-2 lg:grid-cols-3">
+            {directory.map(([address]) => (
+              <li key={address}>
+                <AddressLink address={address} labels={labels} />
+              </li>
+            ))}
+          </ul>
+        </Card>
+        <Card title="Latest scenario transactions">
+          <TxTable txs={txs} labels={labels} empty="Nothing indexed yet." />
+        </Card>
+      </div>
     </>
   );
 }

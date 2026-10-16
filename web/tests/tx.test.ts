@@ -1,6 +1,6 @@
 import { JsonRpcProvider, getAddress, parseEther, type JsonRpcSigner } from "ethers";
 import pg from "pg";
-import { afterAll, beforeAll, beforeEach, describe, expect, it } from "vitest";
+import { beforeAll, beforeEach, describe, expect, it } from "vitest";
 import type { ParticipantUser } from "@/lib/roles";
 import { cookieJar } from "./helpers";
 
@@ -68,7 +68,6 @@ beforeAll(async () => {
   };
 });
 
-afterAll(() => rpc.destroy());
 beforeEach(() => cookieJar.clear());
 
 describe("server-side transaction verification", () => {

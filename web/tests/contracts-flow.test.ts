@@ -1,9 +1,8 @@
-import { readFileSync } from "node:fs";
-import path from "node:path";
-import { Contract, ContractFactory, JsonRpcProvider, getAddress, parseEther, type JsonRpcSigner } from "ethers";
+import { Contract, parseEther } from "ethers";
 import pg from "pg";
 import { afterAll, beforeAll, describe, expect, it } from "vitest";
 import type { ParticipantUser } from "@/lib/roles";
+import { artifact, deploy, devAccounts, signer } from "./chain-helpers";
 
 const { verifyAndRecordTx, checkTxRules } = await import("@/lib/tx-verify");
 const { getScenarioContracts, listProjects, getProjectOfCreator, listOwnedNfts, ContractsNotReadyError } = await import(
@@ -13,29 +12,7 @@ const { GET: getNftMetadata } = await import("@/app/api/nft/[id]/route");
 
 // Deploys the real compiled contracts to the throwaway Hardhat node from global-setup and runs
 // the Stage 5 flows through the server's verification code.
-const rpc = new JsonRpcProvider(process.env.RPC_URL, 31337, { staticNetwork: true });
 const PRICE = parseEther("0.01");
-
-function artifact(name: string) {
-  const file = path.join(
-    import.meta.dirname,
-    "..",
-    "..",
-    "contracts",
-    "artifacts",
-    "contracts",
-    `${name}.sol`,
-    `${name}.json`,
-  );
-  return JSON.parse(readFileSync(file, "utf8")) as { abi: object[]; bytecode: string };
-}
-
-async function deploy(name: string, signer: JsonRpcSigner, args: unknown[]) {
-  const { abi, bytecode } = artifact(name);
-  const contract = await new ContractFactory(abi, bytecode, signer).deploy(...args);
-  await contract.waitForDeployment();
-  return contract as Contract;
-}
 
 let db: pg.Client;
 let accounts: string[];
@@ -47,7 +24,6 @@ let factory: Contract;
 let marketplace: Contract;
 let nft: Contract;
 
-const signer = (address: string) => rpc.getSigner(address);
 const user = (id: string, role: ParticipantUser["role"], wallet: string): ParticipantUser => ({
   kind: "participant",
   scenarioId: sid,
@@ -64,7 +40,7 @@ async function hashOf(tx: Promise<{ hash: string; wait(): Promise<unknown> }>) {
 }
 
 beforeAll(async () => {
-  accounts = ((await rpc.send("eth_accounts", [])) as string[]).map((a) => getAddress(a));
+  accounts = await devAccounts();
   db = new pg.Client({ connectionString: process.env.DATABASE_URL });
   await db.connect();
   await db.query("TRUNCATE scenarios, organizers RESTART IDENTITY CASCADE");
@@ -86,7 +62,6 @@ beforeAll(async () => {
 
 afterAll(async () => {
   await db.end();
-  rpc.destroy();
 });
 
 describe("before deployment", () => {
