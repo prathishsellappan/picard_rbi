@@ -85,7 +85,7 @@ expected on-chain records but don't change what participants can afford.
 | `npm run dev` | Next.js dev server |
 | `npm run build` | Production build |
 | `npm run lint` / `npm run typecheck` | ESLint / TypeScript |
-| `npm test` | Unit tests plus database-backed auth/authorization tests (uses `picard_test`; override with `TEST_DATABASE_URL`, which must end in `_test`) |
+| `npm test` | Web tests, then contract tests. Web tests use the `picard_test` database (override with `TEST_DATABASE_URL`, which must end in `_test`) and start a throwaway Hardhat node on port 8546 for transaction-verification tests |
 | `npm run db:migrate` | Apply `web/db/migrations/*.sql` |
 | `npm run db:seed` | Create the local rehearsal scenario |
 | `npm test -w contracts` | Contract tests |
@@ -98,12 +98,46 @@ expected on-chain records but don't change what participants can afford.
 - Every page and API route checks the role on the server. Hiding a link is not treated as security.
 - Participant APIs never return the malicious flag or organizer notes. A participant sees only their own instructions.
 
-## What is mock in Stage 2
+## Wallet connection (Stage 4)
 
-Project lists, NFT ownership, transaction history, and the explorer show **mock data**, and each
-mock panel is labelled. Wallet connection, transactions, and indexing arrive in Stages 4–6.
-Organizer configuration (participants, roles, wallets, instructions, exchanges, mint bounds,
-funding plan) is real and stored in Postgres.
+Each participant dashboard has a wallet panel:
+
+1. On load the app quietly asks MetaMask which account is connected. There's no popup until the
+   participant clicks **Connect MetaMask**.
+2. The connected account is compared with the participant's assigned wallet from the server session.
+   Any other account shows "This is not your assigned wallet", and every action stays disabled.
+3. The chain must be the configured one (`NEXT_PUBLIC_CHAIN_ID`). Otherwise a **Switch to …**
+   button appears. The app never switches networks by itself.
+4. Account and network changes in MetaMask are picked up immediately. Switching to another account
+   or chain blocks actions again until the assigned wallet is back on the right chain.
+5. Right before signing, the app re-checks account and chain with MetaMask, and ethers is pinned
+   to the chain ID, so a mid-flow switch can't send from the wrong wallet or network.
+
+**Transaction states** shown to participants: requested (approve in MetaMask) → pending (hash
+shown) → confirmed / failed, plus rejected (declined in MetaMask) and timeout (no receipt yet;
+**Check again** asks the server to re-read the chain).
+
+**Server-side check.** The browser only reports a transaction hash. `POST /api/tx` fetches the
+transaction and receipt from `RPC_URL` and records it only if:
+- it was sent from the participant's assigned wallet,
+- its type is allowed for their role,
+- it is the expected kind of transaction (a plain ETH transfer; the mule's must go to Exchange 2).
+
+The stored status is always what the chain returned, never what the browser claimed. On first use
+the server also checks that `RPC_URL` serves the configured chain ID.
+
+Working in Stage 4: the creator's **Send test ETH** (free-text recipient, checksum-validated, with
+a review step) and the mule's **Transfer to Exchange 2** (fixed recipient, "Max" keeps a gas reserve).
+
+**Local MetaMask setup (prepared devices).** Add a network with RPC `http://127.0.0.1:8545` and chain ID
+31337 (or press **Switch to Local Hardhat**, which offers to add it). Then import the participant's
+Hardhat dev account. These keys are public test keys for local use only.
+
+## What is still mock
+
+Project lists, minting, NFT ownership, the mule's incoming-transfer list, and the explorer still
+show **mock data**, and each mock panel is labelled. They arrive in Stages 5–6. Organizer
+configuration, logins, wallet checks, and the two ETH transfer flows are real.
 
 ## Event-day device setup (Option A)
 

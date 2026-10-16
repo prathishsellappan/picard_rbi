@@ -1,6 +1,7 @@
-import { AssignedWallet } from "@/components/AssignedWallet";
 import { Instructions } from "@/components/Instructions";
 import { Card, MockNotice, PageTitle, buttonClass } from "@/components/ui";
+import { WalletPanel } from "@/components/wallet/WalletPanel";
+import { WalletProvider } from "@/components/wallet/WalletProvider";
 import { requireParticipant } from "@/lib/auth";
 import { getOwnInstructions } from "@/lib/data/participant";
 import { MOCK_PROJECTS } from "@/lib/mock-chain";
@@ -10,10 +11,10 @@ export default async function InvestorPage() {
   const instructions = await getOwnInstructions(user);
 
   return (
-    <>
+    <WalletProvider assignedWallet={user.walletAddress}>
       <PageTitle title="Marketplace" subtitle={`Welcome, ${user.displayName}`} />
       <div className="grid gap-4 md:grid-cols-2">
-        <AssignedWallet address={user.walletAddress} />
+        <WalletPanel />
         <Instructions text={instructions} />
       </div>
 
@@ -46,6 +47,6 @@ export default async function InvestorPage() {
           <p className="text-sm text-slate-500">You don&apos;t own any NFTs yet.</p>
         </Card>
       </div>
-    </>
+    </WalletProvider>
   );
 }

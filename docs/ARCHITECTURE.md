@@ -134,3 +134,6 @@ Application state and the blockchain mirror are kept separate. Mirror tables (`c
 - Database access uses `pg` with plain SQL migrations (`web/db/migrations`), with no ORM.
 - Participant-facing queries live in `web/lib/data/participant.ts` and organizer-only queries in
   `web/lib/data/organizer.ts`, so private fields are easy to audit.
+- Wallet logic lives in `web/components/wallet/` (MetaMask provider, wallet panel, transaction hook)
+  with pure rules in `web/lib/wallet/`. Server-side verification of reported transactions is in
+  `web/lib/tx-verify.ts`, and the RPC connection (chain-ID checked) is in `web/lib/chain.ts`.

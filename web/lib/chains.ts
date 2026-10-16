@@ -5,11 +5,13 @@ export type SupportedChain = {
   id: number;
   name: string;
   explorerUrl: string | null;
+  // Used only when asking MetaMask to add the network (Sepolia is built into MetaMask).
+  walletRpcUrl: string | null;
 };
 
 export const SUPPORTED_CHAINS: Record<number, SupportedChain> = {
-  31337: { id: 31337, name: "Local Hardhat", explorerUrl: null },
-  11155111: { id: 11155111, name: "Sepolia", explorerUrl: "https://sepolia.etherscan.io" },
+  31337: { id: 31337, name: "Local Hardhat", explorerUrl: null, walletRpcUrl: "http://127.0.0.1:8545" },
+  11155111: { id: 11155111, name: "Sepolia", explorerUrl: "https://sepolia.etherscan.io", walletRpcUrl: null },
 };
 
 export function getSupportedChain(chainId: number): SupportedChain {

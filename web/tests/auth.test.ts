@@ -1,22 +1,6 @@
-import { beforeAll, beforeEach, describe, expect, it, vi } from "vitest";
+import { beforeAll, beforeEach, describe, expect, it } from "vitest";
 import pg from "pg";
 import { cookieJar, RedirectError } from "./helpers";
-
-// Stand-ins for the Next.js request runtime so server code can run under Vitest.
-vi.mock("server-only", () => ({}));
-vi.mock("next/headers", async () => {
-  const { cookieStore } = await import("./helpers");
-  return { cookies: async () => cookieStore };
-});
-vi.mock("next/navigation", async () => {
-  const { RedirectError } = await import("./helpers");
-  return {
-    redirect: (url: string) => {
-      throw new RedirectError(url);
-    },
-  };
-});
-vi.mock("next/cache", () => ({ revalidatePath: () => {} }));
 
 const { loginAction, logoutAction } = await import("@/app/actions");
 const { requireParticipant, requireOrganizer } = await import("@/lib/auth");
@@ -48,6 +32,7 @@ async function login(loginId: string, password: string) {
 beforeAll(async () => {
   const db = new pg.Client({ connectionString: process.env.DATABASE_URL });
   await db.connect();
+  await db.query("TRUNCATE scenarios, organizers RESTART IDENTITY CASCADE");
   const scenario = await db.query<{ id: number }>(
     "INSERT INTO scenarios (name, chain_id, is_active) VALUES ('test', 31337, TRUE) RETURNING id",
   );
