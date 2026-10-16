@@ -6,10 +6,15 @@ import { WalletProvider } from "@/components/wallet/WalletProvider";
 import { requireParticipant } from "@/lib/auth";
 import { getOwnInstructions } from "@/lib/data/participant";
 import { getActiveScenario } from "@/lib/data/scenario";
+import { listOwnTxs } from "@/lib/tx-verify";
 
 export default async function MulePage() {
   const user = await requireParticipant("mule");
-  const [instructions, scenario] = await Promise.all([getOwnInstructions(user), getActiveScenario()]);
+  const [instructions, scenario, txs] = await Promise.all([
+    getOwnInstructions(user),
+    getActiveScenario(),
+    listOwnTxs(user),
+  ]);
 
   return (
     <WalletProvider assignedWallet={user.walletAddress}>
@@ -27,6 +32,7 @@ export default async function MulePage() {
           <TransferSection
             title="Transfer to Exchange 2"
             kind="mule_transfer"
+            rows={txs}
             fixedRecipient={{ address: scenario.exchange2Address, label: "Exchange 2" }}
           />
         ) : (

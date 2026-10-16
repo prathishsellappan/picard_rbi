@@ -57,9 +57,21 @@ describe("transaction error classification", () => {
   });
 
   it("detects on-chain failure, timeouts, and missing funds", () => {
-    expect(classifyTxError({ code: "CALL_EXCEPTION" }).kind).toBe("failed");
+    expect(classifyTxError({ code: "CALL_EXCEPTION", receipt: { status: 0 } }).kind).toBe("failed");
+    expect(classifyTxError({ code: "CALL_EXCEPTION" }).kind).toBe("error");
     expect(classifyTxError({ code: "TIMEOUT" }).kind).toBe("timeout");
     expect(classifyTxError({ code: "INSUFFICIENT_FUNDS" }).message).toMatch(/Not enough test ETH/);
+  });
+
+  it("explains contract reverts in plain language", () => {
+    expect(classifyTxError({ code: "CALL_EXCEPTION", revert: { name: "CreatorNotAllowed" } })).toEqual({
+      kind: "error",
+      message:
+        "Not sent — the transaction would fail: Your wallet is not approved to create a project yet. Ask the organizer.",
+    });
+    expect(classifyTxError({ code: "CALL_EXCEPTION", revert: { name: "SomethingNew" } }).message).toMatch(
+      /SomethingNew/,
+    );
   });
 
   it("falls back to the error message", () => {

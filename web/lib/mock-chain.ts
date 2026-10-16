@@ -1,15 +1,5 @@
 // Stage 2 placeholder data. Everything here is MOCK application data, not blockchain state.
-// It is replaced by real contract reads and the indexer in Stages 4–6.
-
-export type MockProject = {
-  id: number;
-  name: string;
-  creatorLabel: string;
-  description: string;
-  mintPriceEth: string;
-  mintedCount: number;
-  totalReceivedEth: string;
-};
+// Only the explorer still uses it; the indexer replaces it in Stage 6.
 
 export type MockTx = {
   hash: string;
@@ -21,36 +11,6 @@ export type MockTx = {
   kind: string;
   status: "pending" | "confirmed" | "failed";
 };
-
-export const MOCK_PROJECTS: MockProject[] = [
-  {
-    id: 1,
-    name: "Aurora Pixels",
-    creatorLabel: "P01",
-    description: "Generative skyline art.",
-    mintPriceEth: "0.01",
-    mintedCount: 3,
-    totalReceivedEth: "0.03",
-  },
-  {
-    id: 2,
-    name: "Tidepool DAO",
-    creatorLabel: "P02",
-    description: "Community ocean-cleanup badges.",
-    mintPriceEth: "0.015",
-    mintedCount: 2,
-    totalReceivedEth: "0.03",
-  },
-  {
-    id: 3,
-    name: "Neon Ledger",
-    creatorLabel: "P03",
-    description: "Cyberpunk collectible cards.",
-    mintPriceEth: "0.02",
-    mintedCount: 4,
-    totalReceivedEth: "0.08",
-  },
-];
 
 export const MOCK_TXS: MockTx[] = [
   {

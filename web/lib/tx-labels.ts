@@ -2,4 +2,7 @@
 export const TX_LABELS: Record<string, string> = {
   transfer: "Send test ETH",
   mule_transfer: "Transfer to Exchange 2",
+  create_project: "Create project",
+  withdraw: "Withdraw project funds",
+  mint: "Mint NFT",
 };

@@ -85,7 +85,7 @@ expected on-chain records but don't change what participants can afford.
 | `npm run dev` | Next.js dev server |
 | `npm run build` | Production build |
 | `npm run lint` / `npm run typecheck` | ESLint / TypeScript |
-| `npm test` | Web tests, then contract tests. Web tests use the `picard_test` database (override with `TEST_DATABASE_URL`, which must end in `_test`) and start a throwaway Hardhat node on port 8546 for transaction-verification tests |
+| `npm test` | Web tests, then contract tests. Web tests use the `picard_test` database (override with `TEST_DATABASE_URL`, which must end in `_test`), compile the contracts, and start a throwaway Hardhat node on port 8546 where they deploy the contracts and run the project, mint and withdraw flows through the server's verification code |
 | `npm run db:migrate` | Apply `web/db/migrations/*.sql` |
 | `npm run db:seed` | Create the local rehearsal scenario |
 | `npm test -w contracts` | Contract tests |
@@ -126,8 +126,43 @@ transaction and receipt from `RPC_URL` and records it only if:
 The stored status is always what the chain returned, never what the browser claimed. On first use
 the server also checks that `RPC_URL` serves the configured chain ID.
 
-Working in Stage 4: the creator's **Send test ETH** (free-text recipient, checksum-validated, with
-a review step) and the mule's **Transfer to Exchange 2** (fixed recipient, "Max" keeps a gas reserve).
+Transaction types the server accepts, per role:
+
+| Kind | Role | Must be |
+|---|---|---|
+| `transfer` | creator | plain ETH transfer from the creator's wallet |
+| `mule_transfer` | mule | plain ETH transfer to Exchange 2 |
+| `create_project` | creator | `createProject()` call to the scenario's factory |
+| `withdraw` | creator | `withdraw()` call to the creator's own project (looked up in the factory) |
+| `mint` | investor | `mint()` call to the scenario's marketplace |
+
+## Participant workflows (Stage 5)
+
+Before these work, the organizer must run `deploy:local`, `register-creators:local` and
+`fund:local` (see above).
+
+- **Creator**
+  - Creates one project: name, description, and a mint price within the factory's on-chain bounds.
+    A review step comes first, then MetaMask.
+  - Then sees the project read from its contract: mint price, NFTs minted, total received,
+    withdrawn and available.
+  - Can withdraw any amount up to "available", always to their own wallet.
+  - Has the "Send test ETH" panel for ordinary transfers.
+- **Investor:** sees every project registered in the factory and mints one NFT per click, paying
+  exactly the mint price. "My NFTs" comes from on-chain ownership in the NFT contract.
+- **Mule:** "Transfer to Exchange 2" (fixed recipient, "Max" keeps a gas reserve). The incoming
+  transfer list arrives with the indexer in Stage 6.
+
+**Where the data comes from:**
+- Project facts and NFT ownership are read from the contracts on every page load.
+- The database holds only each project's description, which the creator enters and which is
+  linked once the `createProject` receipt is confirmed.
+- A project created outside the app still appears in the marketplace, just without a description.
+- If a contract call would revert, MetaMask is never opened and the participant sees the reason
+  in plain language, for example "Your wallet is not approved to create a project yet."
+
+NFT metadata for `tokenURI` is served publicly at `/api/nft/<tokenId>` (project name, description
+and contract address only).
 
 **Local MetaMask setup (prepared devices).** Add a network with RPC `http://127.0.0.1:8545` and chain ID
 31337 (or press **Switch to Local Hardhat**, which offers to add it). Then import the participant's
@@ -135,9 +170,8 @@ Hardhat dev account. These keys are public test keys for local use only.
 
 ## What is still mock
 
-Project lists, minting, NFT ownership, the mule's incoming-transfer list, and the explorer still
-show **mock data**, and each mock panel is labelled. They arrive in Stages 5–6. Organizer
-configuration, logins, wallet checks, and the two ETH transfer flows are real.
+The mule's incoming-transfer list and the explorer still show **mock** or placeholder data, and
+each is labelled. They arrive with the indexer in Stage 6. Everything else is real.
 
 ## Event-day device setup (Option A)
 

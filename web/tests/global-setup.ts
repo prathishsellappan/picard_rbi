@@ -40,6 +40,8 @@ export default async function setup() {
   });
 
   const contractsDir = path.join(import.meta.dirname, "..", "..", "contracts");
+  // Contract tests deploy the real compiled contracts onto the throwaway node.
+  execFileSync("npx", ["hardhat", "build"], { cwd: contractsDir, stdio: "ignore" });
   const node: ChildProcess = spawn("npx", ["hardhat", "node", "--port", String(TEST_RPC_PORT)], {
     cwd: contractsDir,
     stdio: "ignore",

@@ -129,15 +129,29 @@ describe("server-side transaction verification", () => {
 
   it("checks rules without a network (unit)", () => {
     const base = { from: accounts[1], to: accounts[2], data: "0x", value: 1n };
-    expect(() => checkTxRules(base, "transfer", creator, { exchange2Address: exchange2 })).not.toThrow();
-    expect(() => checkTxRules({ ...base, value: 0n }, "transfer", creator, { exchange2Address: exchange2 })).toThrow(
-      TxVerificationError,
-    );
-    expect(() => checkTxRules({ ...base, to: null }, "transfer", creator, { exchange2Address: exchange2 })).toThrow(
-      TxVerificationError,
-    );
     expect(() =>
-      checkTxRules({ ...base, from: accounts[15], to: exchange2 }, "mule_transfer", mule, { exchange2Address: null }),
+      checkTxRules(base, "transfer", creator, { exchange2Address: exchange2, contracts: null, creatorProject: null }),
+    ).not.toThrow();
+    expect(() =>
+      checkTxRules({ ...base, value: 0n }, "transfer", creator, {
+        exchange2Address: exchange2,
+        contracts: null,
+        creatorProject: null,
+      }),
+    ).toThrow(TxVerificationError);
+    expect(() =>
+      checkTxRules({ ...base, to: null }, "transfer", creator, {
+        exchange2Address: exchange2,
+        contracts: null,
+        creatorProject: null,
+      }),
+    ).toThrow(TxVerificationError);
+    expect(() =>
+      checkTxRules({ ...base, from: accounts[15], to: exchange2 }, "mule_transfer", mule, {
+        exchange2Address: null,
+        contracts: null,
+        creatorProject: null,
+      }),
     ).toThrow("Exchange 2 is not configured.");
   });
 });

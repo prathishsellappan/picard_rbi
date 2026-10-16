@@ -17,5 +17,6 @@ local Ethereum network or Sepolia, leaving public on-chain evidence for a later 
 | 2. App skeleton (mock blockchain data) | done |
 | 3. Smart contracts and organizer scripts | done |
 | 4. Wallet integration and transaction status | done |
-| 5. Participant workflows (projects, minting, withdrawal) | next |
-| 6–8. Explorer, E2E, Sepolia | pending |
+| 5. Participant workflows (projects, minting, withdrawal) | done |
+| 6. Indexer and explorer | next |
+| 7–8. E2E, Sepolia | pending |

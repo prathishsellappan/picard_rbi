@@ -1,7 +1,7 @@
 "use client";
 
 import type { JsonRpcSigner, TransactionResponse } from "ethers";
-import { useCallback, useState } from "react";
+import { useCallback, useRef, useState } from "react";
 import { getConfiguredChain } from "@/lib/chains";
 import { classifyTxError } from "@/lib/wallet/tx-errors";
 import type { TxKind } from "@/lib/tx-verify";
@@ -26,13 +26,15 @@ type ServerTx = { status: "pending" | "confirmed" | "failed" };
 
 // Asks the server to look the transaction up on-chain and record it. Retries briefly because
 // the server's RPC node can lag behind MetaMask's right after broadcast.
-async function reportToServer(kind: TxKind, txHash: string): Promise<ServerTx> {
+export type TxMeta = { description?: string };
+
+async function reportToServer(kind: TxKind, txHash: string, meta: TxMeta): Promise<ServerTx> {
   let lastError = "Could not record the transaction.";
   for (let attempt = 0; attempt < 6; attempt++) {
     const res = await fetch("/api/tx", {
       method: "POST",
       headers: { "content-type": "application/json" },
-      body: JSON.stringify({ kind, txHash }),
+      body: JSON.stringify({ kind, txHash, ...meta }),
     });
     const body = await res.json().catch(() => ({}));
     if (res.ok) return body as ServerTx;
@@ -46,10 +48,11 @@ async function reportToServer(kind: TxKind, txHash: string): Promise<ServerTx> {
 export function useTransaction(kind: TxKind, onSettled?: () => void) {
   const { getVerifiedSigner } = useWallet();
   const [state, setState] = useState<TxState>(IDLE);
+  const metaRef = useRef<TxMeta>({});
 
   const settle = useCallback(
     async (hash: string) => {
-      const server = await reportToServer(kind, hash);
+      const server = await reportToServer(kind, hash, metaRef.current);
       if (server.status === "confirmed") {
         setState({ phase: "confirmed", hash, message: "Confirmed on-chain." });
       } else if (server.status === "failed") {
@@ -63,7 +66,8 @@ export function useTransaction(kind: TxKind, onSettled?: () => void) {
   );
 
   const run = useCallback(
-    async (send: (signer: JsonRpcSigner) => Promise<TransactionResponse>) => {
+    async (send: (signer: JsonRpcSigner) => Promise<TransactionResponse>, meta: TxMeta = {}) => {
+      metaRef.current = meta;
       let hash: string | null = null;
       try {
         setState({ phase: "requested", hash: null, message: "Approve the transaction in MetaMask…" });
@@ -71,7 +75,7 @@ export function useTransaction(kind: TxKind, onSettled?: () => void) {
         const tx = await send(signer);
         hash = tx.hash;
         setState({ phase: "pending", hash, message: "Submitted. Waiting for confirmation…" });
-        await reportToServer(kind, hash).catch(() => {}); // early record; re-checked below
+        await reportToServer(kind, hash, meta).catch(() => {}); // early record; re-checked below
         await tx.wait(1, WAIT_TIMEOUT_MS);
         await settle(hash);
       } catch (error) {
