@@ -1,0 +1,20 @@
+# Picard — crypto-fraud role-play (testnet only)
+
+An educational role-play that walks 15 participants through a simulated NFT-project fraud on a
+local Ethereum network or Sepolia, leaving public on-chain evidence for a later investigation.
+**Test assets only. Nothing here has monetary value. Mainnet is refused.**
+
+- Architecture, contract design, payment flow, and decisions: [docs/ARCHITECTURE.md](docs/ARCHITECTURE.md)
+- Contracts, permissions, events: [docs/CONTRACTS.md](docs/CONTRACTS.md)
+- Local setup and running: [docs/SETUP.md](docs/SETUP.md)
+- Project rules for contributors and Claude Code: [CLAUDE.md](CLAUDE.md)
+
+## Status
+
+| Stage | State |
+|---|---|
+| 1. Plan | done |
+| 2. App skeleton (mock blockchain data) | done |
+| 3. Smart contracts and organizer scripts | done |
+| 4. Wallet integration | next |
+| 5–8. Workflows, explorer, E2E, Sepolia | pending |

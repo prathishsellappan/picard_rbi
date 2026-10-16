@@ -1,0 +1,22 @@
+node_modules/
+.next/
+out/
+coverage/
+*.tsbuildinfo
+next-env.d.ts
+
+# Secrets — never commit
+.env
+.env.*
+!.env.example
+organizer-secrets/
+
+# Hardhat
+contracts/artifacts/
+contracts/cache/
+contracts/types/
+
+.DS_Store
+
+# Local-chain deployments are throwaway; Sepolia deployment files are committed.
+deployments/31337.json
