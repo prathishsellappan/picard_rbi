@@ -18,6 +18,7 @@
     "db:migrate": "npm run db:migrate -w web",
     "db:seed": "npm run db:seed -w web --",
     "test:contracts": "npm run test -w contracts",
-    "indexer": "npm run indexer -w web --"
+    "indexer": "npm run indexer -w web --",
+    "provision": "npm run provision -w web --"
   }
 }

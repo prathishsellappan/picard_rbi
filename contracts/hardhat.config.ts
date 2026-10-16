@@ -33,7 +33,8 @@ export default defineConfig({
       type: "http",
       chainType: "l1",
       chainId: 31337,
-      url: "http://127.0.0.1:8545",
+      // LOCAL_RPC_URL lets the end-to-end test point the organizer scripts at its throwaway node.
+      url: process.env.LOCAL_RPC_URL ?? "http://127.0.0.1:8545",
     },
     sepolia: {
       type: "http",

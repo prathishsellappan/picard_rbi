@@ -69,6 +69,49 @@ new scenario deployment there instead.
 Hardhat's development accounts start with 10,000 ETH each, so local funding transfers create the
 expected on-chain records but don't change what participants can afford.
 
+## Provisioning a scenario with fresh wallets
+
+`db:seed` uses Hardhat's public dev accounts and works only locally. For Sepolia, or for a local
+rehearsal with fresh zero-balance wallets, the organizer provisions a scenario:
+
+```bash
+npm run provision -- --name "Sepolia rehearsal 1" --exchange1 0xYourFundedExchange1 --malicious P03
+```
+
+- Generates 15 participant wallets and Exchange 2. Exchange 1 is generated too unless `--exchange1`
+  names an existing organizer address, such as one already funded from a faucet.
+- The database receives only public addresses and password hashes.
+- Private keys and login passwords go to `organizer-secrets/scenario-<id>-chain-<chainId>-wallets.json`,
+  and the cards to `...-login-cards.csv`. Both are gitignored and readable only by the organizer.
+  Import each key into MetaMask on the prepared device, print the cards, and delete the files
+  after the event.
+- `--replace` deactivates the chain's current scenario but keeps its records. Blockchain history
+  can't be erased, so each Sepolia rehearsal is simply a new scenario.
+
+## End-to-end simulation (Stage 7)
+
+`web/tests/e2e.test.ts` runs the whole role-play on the throwaway test node as part of `npm test`.
+It drives all 17 wallets, from 15 freshly provisioned zero-balance wallets onwards:
+
+1. `provision-scenario.ts`, then the real organizer scripts `deploy.ts`, `register-creators.ts`
+   and `fund-wallets.ts` (pointed at the test node with `LOCAL_RPC_URL`, writing the deployment
+   file to a temp dir with `DEPLOYMENTS_DIR`).
+2. Five creators create projects and nine investors make 18 mints. One honest creator makes a
+   partial withdrawal. The malicious creator withdraws everything and sends it to the mule, who
+   sends it to Exchange 2. Every action is reported through the server's transaction verification.
+3. The indexer runs, then the evidence is checked against the chain and the public index only:
+   - each wallet was funded once, per the plan;
+   - each creator is linked to one project;
+   - every mint payment reached the chosen project, and the totals match on-chain accounting;
+   - withdrawals and remaining balances are correct;
+   - the trail project → malicious creator → mule → Exchange 2 can be followed by matching values;
+   - **every participant's and Exchange 2's balance reconciles to the wei** from indexed
+     transfers, internal movements and gas fees;
+   - all 17 wallets appear in the index, and every action was recorded as confirmed;
+   - public labels never reveal roles.
+
+Run only the simulation with `npx vitest run tests/e2e.test.ts` (from `web/`, Postgres running).
+
 ## Environment variables (`web/.env.local`)
 
 | Variable | Meaning |
@@ -87,7 +130,9 @@ expected on-chain records but don't change what participants can afford.
 | `npm run lint` / `npm run typecheck` | ESLint / TypeScript |
 | `npm test` | Web tests, then contract tests. Web tests use the `picard_test` database (override with `TEST_DATABASE_URL`, which must end in `_test`), compile the contracts, and start a throwaway Hardhat node on port 8546 where they deploy the contracts and run the project, mint and withdraw flows through the server's verification code |
 | `npm run db:migrate` | Apply `web/db/migrations/*.sql` |
-| `npm run db:seed` | Create the local rehearsal scenario |
+| `npm run db:seed` | Create the local rehearsal scenario (Hardhat dev accounts) |
+| `npm run provision -- --name …` | Create a scenario with fresh wallets (local or Sepolia) |
+| `npm run indexer` | Run the scenario indexer (`-- --once` to stop at the head) |
 | `npm test -w contracts` | Contract tests |
 | `npm run typecheck -w contracts` | Compile and type-check contracts and scripts |
 

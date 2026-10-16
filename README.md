@@ -19,5 +19,5 @@ local Ethereum network or Sepolia, leaving public on-chain evidence for a later 
 | 4. Wallet integration and transaction status | done |
 | 5. Participant workflows (projects, minting, withdrawal) | done |
 | 6. Indexer and explorer | done |
-| 7. End-to-end simulation | next |
-| 8. Sepolia deployment | pending |
+| 7. End-to-end simulation (17 wallets) | done |
+| 8. Sepolia deployment and rehearsal | next |

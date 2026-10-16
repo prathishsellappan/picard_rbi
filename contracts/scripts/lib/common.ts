@@ -68,8 +68,9 @@ export async function getActiveScenario(db: pg.Client, chainId: number): Promise
   return rows[0];
 }
 
+// DEPLOYMENTS_DIR lets the end-to-end test keep its throwaway deployment out of the repo.
 export function deploymentFile(chainId: number): string {
-  return path.join(REPO_ROOT, "deployments", `${chainId}.json`);
+  return path.join(process.env.DEPLOYMENTS_DIR ?? path.join(REPO_ROOT, "deployments"), `${chainId}.json`);
 }
 
 export function sameAddress(a: string | null, b: string): boolean {
