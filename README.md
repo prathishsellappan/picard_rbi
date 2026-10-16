@@ -4,6 +4,21 @@ An educational role-play that walks 15 participants through a simulated NFT-proj
 local Ethereum network or Sepolia, leaving public on-chain evidence for a later investigation.
 **Test assets only. Nothing here has monetary value. Mainnet is refused.**
 
+## Run it on this computer
+
+```bash
+npm install
+npm run local
+```
+
+Then open http://localhost:3000. You need Postgres running (`brew services start postgresql@17`).
+Login cards are in `organizer-secrets/credentials-local.csv`.
+
+- How to use the website, per role (shareable with participants): [docs/USER-GUIDE.md](docs/USER-GUIDE.md)
+- Running a session as the organizer: [docs/ORGANIZER-GUIDE.md](docs/ORGANIZER-GUIDE.md)
+
+## Documentation
+
 - Architecture, contract design, payment flow, and decisions: [docs/ARCHITECTURE.md](docs/ARCHITECTURE.md)
 - Contracts, permissions, events: [docs/CONTRACTS.md](docs/CONTRACTS.md)
 - Local setup and running: [docs/SETUP.md](docs/SETUP.md)

@@ -20,3 +20,6 @@ contracts/types/
 
 # Local-chain deployments are throwaway; Sepolia deployment files are committed.
 deployments/31337.json
+
+# Local run logs
+.local/

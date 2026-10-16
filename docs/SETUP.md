@@ -5,6 +5,11 @@
 - Node.js 22 LTS or newer (`.nvmrc` pins 22; Node 26 is known to work for Stage 2)
 - PostgreSQL 17 (macOS: `brew install postgresql@17 && brew services start postgresql@17`)
 
+## Quick start
+
+`npm run local` does all of the steps below and keeps them running (chain, indexer, website). See
+[ORGANIZER-GUIDE.md](ORGANIZER-GUIDE.md). The rest of this page describes the individual pieces.
+
 ## First run
 
 ```bash

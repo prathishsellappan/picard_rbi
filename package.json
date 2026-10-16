@@ -10,6 +10,7 @@
     "node": ">=22"
   },
   "scripts": {
+    "local": "node scripts/start-local.mjs",
     "dev": "npm run dev -w web",
     "build": "npm run build -w web",
     "lint": "npm run lint -w web",
