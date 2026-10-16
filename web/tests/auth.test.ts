@@ -39,8 +39,8 @@ beforeAll(async () => {
   const sid = scenario.rows[0].id;
   const pw = await hashPassword("pw-participant");
   await db.query(
-    `INSERT INTO participants (id, scenario_id, display_name, role, wallet_address, password_hash)
-     VALUES ('P01', $1, 'Creator One', 'creator', $2, $4), ('P06', $1, 'Investor Six', 'investor', $3, $4)`,
+    `INSERT INTO participants (id, scenario_id, display_name, role, wallet_address, password_hash, username)
+     VALUES ('P01', $1, 'Creator 1', 'creator', $2, $4, 'creator1'), ('P06', $1, 'Investor 1', 'investor', $3, $4, 'investor1')`,
     [sid, CREATOR_WALLET, INVESTOR_WALLET, pw],
   );
   await db.query(
@@ -58,24 +58,26 @@ beforeAll(async () => {
 beforeEach(() => cookieJar.clear());
 
 describe("login", () => {
-  it("logs a participant in by ID (case-insensitive) and redirects", async () => {
-    expect(await login("p06", "pw-participant")).toEqual({ redirected: "/" });
+  it("logs a participant in by role-based username and redirects", async () => {
+    expect(await login("Investor 1", "pw-participant")).toEqual({ redirected: "/" }); // case and spaces ignored
     expect(cookieJar.get(SESSION_COOKIE)).toBeTruthy();
     const user = await getSessionUser();
-    expect(user).toMatchObject({ kind: "participant", participantId: "P06", role: "investor" });
+    expect(user).toMatchObject({ kind: "participant", participantId: "P06", username: "investor1", role: "investor" });
   });
 
   it("rejects a wrong password without setting a cookie", async () => {
-    expect(await login("P06", "nope")).toEqual({ error: "Invalid login or password." });
+    expect(await login("investor1", "nope")).toEqual({ error: "Invalid login or password." });
     expect(cookieJar.size).toBe(0);
   });
 
   it("rejects unknown logins with the same message", async () => {
-    expect(await login("P99", "pw-participant")).toEqual({ error: "Invalid login or password." });
+    expect(await login("investor99", "pw-participant")).toEqual({ error: "Invalid login or password." });
+    // The internal participant ID is not a login.
+    expect(await login("P06", "pw-participant")).toEqual({ error: "Invalid login or password." });
   });
 
   it("logs out and invalidates the session server-side", async () => {
-    await login("P06", "pw-participant");
+    await login("investor1", "pw-participant");
     const token = cookieJar.get(SESSION_COOKIE)!;
     await expect(logoutAction()).rejects.toBeInstanceOf(RedirectError);
     cookieJar.set(SESSION_COOKIE, token); // replaying the old token must not work
@@ -94,7 +96,7 @@ describe("page guards", () => {
   });
 
   it("keeps an investor out of creator and organizer pages", async () => {
-    await login("P06", "pw-participant");
+    await login("investor1", "pw-participant");
     await expect(requireParticipant("creator")).rejects.toMatchObject({ url: "/" });
     await expect(requireOrganizer()).rejects.toMatchObject({ url: "/" });
     await expect(requireParticipant("investor")).resolves.toMatchObject({ participantId: "P06" });
@@ -108,12 +110,12 @@ describe("API authorization", () => {
   });
 
   it("returns 403 when a participant calls an organizer endpoint", async () => {
-    await login("P01", "pw-participant");
+    await login("creator1", "pw-participant");
     expect((await getOrgParticipants()).status).toBe(403);
   });
 
   it("returns the participant's own profile without private scenario fields", async () => {
-    await login("P01", "pw-participant");
+    await login("creator1", "pw-participant");
     const body = await (await getMe()).json();
     expect(body).toMatchObject({ participantId: "P01", role: "creator", walletAddress: CREATOR_WALLET });
     const raw = JSON.stringify(body);
@@ -129,14 +131,30 @@ describe("API authorization", () => {
   });
 
   it("refuses organizer Server Functions for participants", async () => {
-    await login("P06", "pw-participant");
+    await login("investor1", "pw-participant");
     const result = await updateParticipantAction(
       null,
       form({ id: "P06", displayName: "hacked", role: "creator", walletAddress: INVESTOR_WALLET }),
     );
     expect(result).toEqual({ ok: false, message: "Not allowed for your role" });
-    await login("P06", "pw-participant");
+    await login("investor1", "pw-participant");
     expect(await getSessionUser()).toMatchObject({ role: "investor" });
+  });
+
+  it("rejects badly formed login usernames", async () => {
+    await login("organizer", "pw-organizer");
+    const result = await updateParticipantAction(
+      null,
+      form({
+        id: "P06",
+        username: "Investor One!",
+        displayName: "x",
+        role: "investor",
+        walletAddress: INVESTOR_WALLET,
+      }),
+    );
+    expect(result?.ok).toBe(false);
+    expect(result?.message).toMatch(/Login username/);
   });
 
   it("validates organizer input", async () => {
@@ -148,7 +166,14 @@ describe("API authorization", () => {
     expect(bad?.ok).toBe(false);
     const notCreator = await updateParticipantAction(
       null,
-      form({ id: "P06", displayName: "x", role: "investor", walletAddress: INVESTOR_WALLET, isMalicious: "on" }),
+      form({
+        id: "P06",
+        username: "investor1",
+        displayName: "x",
+        role: "investor",
+        walletAddress: INVESTOR_WALLET,
+        isMalicious: "on",
+      }),
     );
     expect(notCreator).toEqual({ ok: false, message: "Only a creator can be marked malicious." });
   });
@@ -156,7 +181,7 @@ describe("API authorization", () => {
 
 describe("participant data", () => {
   it("returns only the participant's own instructions", async () => {
-    await login("P06", "pw-participant");
+    await login("investor1", "pw-participant");
     const user = await requireParticipant("investor");
     expect(await getOwnInstructions(user)).toBe("investor brief");
   });

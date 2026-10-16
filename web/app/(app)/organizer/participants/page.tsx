@@ -24,6 +24,16 @@ function ParticipantFields({ p }: { p?: OrganizerParticipantRow }) {
         />
       </label>
       <label className="text-xs">
+        Login username
+        <input
+          name="username"
+          defaultValue={p?.username}
+          className={`${inputClass} font-mono`}
+          placeholder="investor10"
+          required
+        />
+      </label>
+      <label className="text-xs">
         Display name
         <input name="displayName" defaultValue={p?.display_name} className={inputClass} required />
       </label>
@@ -73,7 +83,7 @@ export default async function OrganizerParticipantsPage() {
         {participants.map((p) => (
           <Card
             key={p.id}
-            title={`${p.id} · ${p.role}${p.is_malicious ? " · malicious" : ""}`}
+            title={`${p.id} · login ${p.username} · ${p.role}${p.is_malicious ? " · malicious" : ""}`}
             actions={
               <ActionForm action={resetPasswordAction} className="text-right">
                 <input type="hidden" name="id" value={p.id} />

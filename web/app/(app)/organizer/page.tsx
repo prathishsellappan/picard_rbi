@@ -122,7 +122,9 @@ export default async function OrganizerOverviewPage() {
                 <tbody>
                   {progress.map((p) => (
                     <tr key={p.id} className="border-t border-slate-100">
-                      <td className="py-1 pr-3">{p.id}</td>
+                      <td className="py-1 pr-3">
+                        {p.id} <span className="font-mono text-xs text-slate-500">{p.username}</span>
+                      </td>
                       <td className="py-1 pr-3 capitalize">
                         {p.role}
                         {malicious.includes(p.id) && <span className="text-red-700"> (malicious)</span>}

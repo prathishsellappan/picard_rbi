@@ -13,7 +13,7 @@ export function LoginForm() {
     <form action={formAction} className="space-y-4 rounded-lg border border-slate-200 bg-white p-5 shadow-sm">
       <label className="block text-sm">
         <span className="mb-1 block font-medium">Login</span>
-        <input name="login" autoComplete="username" required className={inputClass} placeholder="P01" />
+        <input name="login" autoComplete="username" required className={inputClass} placeholder="e.g. creator1" />
       </label>
       <label className="block text-sm">
         <span className="mb-1 block font-medium">Password</span>

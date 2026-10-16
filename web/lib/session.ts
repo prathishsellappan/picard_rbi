@@ -55,6 +55,7 @@ type SessionRow = {
   username: string | null;
   scenario_id: number | null;
   participant_id: string | null;
+  participant_username: string | null;
   display_name: string | null;
   role: ParticipantRole | null;
   wallet_address: string | null;
@@ -68,7 +69,7 @@ export async function getSessionUser(): Promise<SessionUser | null> {
 
   const row = await queryOne<SessionRow>(
     `SELECT s.organizer_id, o.username,
-            s.scenario_id, s.participant_id, p.display_name, p.role, p.wallet_address
+            s.scenario_id, s.participant_id, p.username AS participant_username, p.display_name, p.role, p.wallet_address
        FROM sessions s
        LEFT JOIN organizers o ON o.id = s.organizer_id
        LEFT JOIN participants p ON p.scenario_id = s.scenario_id AND p.id = s.participant_id
@@ -83,11 +84,19 @@ export async function getSessionUser(): Promise<SessionUser | null> {
   if (row.organizer_id !== null && row.username !== null) {
     return { kind: "organizer", organizerId: row.organizer_id, username: row.username };
   }
-  if (row.participant_id && row.scenario_id !== null && row.role && row.wallet_address && row.display_name) {
+  if (
+    row.participant_id &&
+    row.participant_username &&
+    row.scenario_id !== null &&
+    row.role &&
+    row.wallet_address &&
+    row.display_name
+  ) {
     return {
       kind: "participant",
       scenarioId: row.scenario_id,
       participantId: row.participant_id,
+      username: row.participant_username,
       displayName: row.display_name,
       role: row.role,
       walletAddress: row.wallet_address,

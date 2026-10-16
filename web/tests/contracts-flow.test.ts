@@ -28,6 +28,7 @@ const user = (id: string, role: ParticipantUser["role"], wallet: string): Partic
   kind: "participant",
   scenarioId: sid,
   participantId: id,
+  username: id.toLowerCase(),
   displayName: id,
   role,
   walletAddress: wallet,
@@ -51,8 +52,9 @@ beforeAll(async () => {
     )
   ).rows[0].id;
   await db.query(
-    `INSERT INTO participants (id, scenario_id, display_name, role, wallet_address, password_hash) VALUES
-     ('P01', $1, 'A', 'creator', $2, 'x'), ('P02', $1, 'B', 'creator', $3, 'x'), ('P06', $1, 'I', 'investor', $4, 'x')`,
+    `INSERT INTO participants (id, scenario_id, display_name, role, wallet_address, password_hash, username) VALUES
+     ('P01', $1, 'A', 'creator', $2, 'x', 'creator1'), ('P02', $1, 'B', 'creator', $3, 'x', 'creator2'),
+     ('P06', $1, 'I', 'investor', $4, 'x', 'investor1')`,
     [sid, accounts[1], accounts[2], accounts[6]],
   );
   creatorA = user("P01", "creator", accounts[1]);

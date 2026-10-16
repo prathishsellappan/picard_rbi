@@ -3,6 +3,7 @@
 import { formatEther } from "ethers";
 import { useEffect, useState } from "react";
 import { Card, Mono, buttonClass } from "@/components/ui";
+import { shortAddress } from "@/lib/address";
 import { getConfiguredChain } from "@/lib/chains";
 import { statusMessage, useWallet } from "./WalletProvider";
 
@@ -34,12 +35,30 @@ export function WalletPanel() {
         {wallet.checked ? statusMessage(wallet.status, chain.name) : "Checking MetaMask…"}
       </p>
       {wallet.error && <p className="mt-1 text-sm text-red-700">{wallet.error}</p>}
+      {wallet.status === "wrong-account" && (
+        <ol className="mt-2 list-decimal space-y-1 pl-5 text-sm text-slate-700">
+          <li>
+            Click <strong>Choose account in MetaMask</strong>.
+          </li>
+          <li>
+            In the MetaMask window, select only the account ending in{" "}
+            <strong className="font-mono">{wallet.assignedWallet.slice(-4)}</strong> (
+            <span className="font-mono">{shortAddress(wallet.assignedWallet)}</span>) and confirm.
+          </li>
+          <li>If that account isn&apos;t in MetaMask, ask the organizer to import it for you.</li>
+        </ol>
+      )}
       {wallet.status === "ready" && balance !== null && (
         <p className="mt-1 text-sm text-slate-600">Balance: {formatEther(balance)} test ETH</p>
       )}
 
       <div className="mt-3 flex gap-2">
-        {(wallet.status === "disconnected" || wallet.status === "wrong-account" || wallet.status === "no-wallet") && (
+        {wallet.status === "wrong-account" && (
+          <button type="button" onClick={wallet.chooseAccount} disabled={wallet.connecting} className={buttonClass}>
+            {wallet.connecting ? "Waiting for MetaMask…" : "Choose account in MetaMask"}
+          </button>
+        )}
+        {(wallet.status === "disconnected" || wallet.status === "no-wallet") && (
           <button type="button" onClick={wallet.connect} disabled={wallet.connecting} className={buttonClass}>
             {wallet.connecting ? "Connecting…" : "Connect MetaMask"}
           </button>

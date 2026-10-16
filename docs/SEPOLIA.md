@@ -109,6 +109,8 @@ Sepolia history can't be erased, and a new scenario keeps runs from mixing.
    ```
    Add `--replace` from the second scenario on. The previous scenario is deactivated, not deleted.
    Keys and login cards are written to `organizer-secrets/scenario-<id>-chain-11155111-*`.
+   Logins are role-based (`creator1`…, `investor1`…, `mule`), and the explorer labels stay
+   `P01`…`P15`.
 2. **Configure (you).** Log in to the hosted app as `organizer`.
    - Write each participant's instructions on **Participants**.
    - Check the mint bounds and funding on **Scenario**. Both must be final before step 4.

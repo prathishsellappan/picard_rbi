@@ -5,6 +5,7 @@ import { query } from "../db";
 
 export type ParticipantProgress = {
   id: string;
+  username: string;
   role: string;
   wallet: string;
   funded: boolean;
@@ -19,6 +20,7 @@ export type ParticipantProgress = {
 export async function getParticipantProgress(scenarioId: number): Promise<ParticipantProgress[]> {
   const rows = await query<{
     id: string;
+    username: string;
     role: string;
     wallet_address: string;
     funded: boolean;
@@ -32,7 +34,7 @@ export async function getParticipantProgress(scenarioId: number): Promise<Partic
     `WITH tx AS (SELECT * FROM chain_txs WHERE scenario_id = $1 AND status = 1),
           ev AS (SELECT * FROM chain_events WHERE scenario_id = $1),
           ex1 AS (SELECT lower(exchange1_address) AS a FROM scenarios WHERE id = $1)
-     SELECT p.id, p.role, p.wallet_address,
+     SELECT p.id, p.username, p.role, p.wallet_address,
             EXISTS (SELECT 1 FROM tx, ex1 WHERE lower(tx.from_address) = ex1.a
                       AND lower(tx.to_address) = lower(p.wallet_address)) AS funded,
             EXISTS (SELECT 1 FROM ev WHERE event_name = 'ProjectCreated'
@@ -52,6 +54,7 @@ export async function getParticipantProgress(scenarioId: number): Promise<Partic
   );
   return rows.map((r) => ({
     id: r.id,
+    username: r.username,
     role: r.role,
     wallet: r.wallet_address,
     funded: r.funded,

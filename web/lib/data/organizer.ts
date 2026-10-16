@@ -6,6 +6,7 @@ import type { ParticipantRole } from "../roles";
 
 export type OrganizerParticipantRow = {
   id: string;
+  username: string;
   display_name: string;
   role: ParticipantRole;
   wallet_address: string;
@@ -16,7 +17,7 @@ export type OrganizerParticipantRow = {
 
 export async function listParticipantsForOrganizer(scenarioId: number): Promise<OrganizerParticipantRow[]> {
   return query<OrganizerParticipantRow>(
-    `SELECT p.id, p.display_name, p.role, p.wallet_address,
+    `SELECT p.id, p.username, p.display_name, p.role, p.wallet_address,
             coalesce(pp.instructions, '') AS instructions,
             coalesce(pp.is_malicious, FALSE) AS is_malicious,
             coalesce(pp.organizer_notes, '') AS organizer_notes

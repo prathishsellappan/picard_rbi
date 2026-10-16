@@ -76,6 +76,7 @@ describe("role rules", () => {
     kind: "participant",
     scenarioId: 1,
     participantId: "P06",
+    username: "investor1",
     displayName: "x",
     role: "investor",
     walletAddress: "0x0",

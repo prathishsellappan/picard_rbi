@@ -21,12 +21,13 @@ export async function loginAction(_prev: LoginState, formData: FormData): Promis
   if (!parsed.success) return { error: "Enter your login and password." };
   const { login, password } = parsed.data;
 
-  // Participants log in with their ID (e.g. P01) in the active scenario for the configured chain.
+  // Participants log in with their role-based username (e.g. creator1, investor3, mule) in the
+  // active scenario for the configured chain. Case and spaces are ignored ("Creator 1" works).
   const participant = await queryOne<{ scenario_id: number; id: string; password_hash: string }>(
     `SELECT p.scenario_id, p.id, p.password_hash
        FROM participants p JOIN scenarios s ON s.id = p.scenario_id
-      WHERE s.is_active AND s.chain_id = $1 AND upper(p.id) = upper($2)`,
-    [getServerConfig().chain.id, login],
+      WHERE s.is_active AND s.chain_id = $1 AND p.username = $2`,
+    [getServerConfig().chain.id, login.toLowerCase().replace(/\s+/g, "")],
   );
   if (participant) {
     if (!(await verifyPassword(password, participant.password_hash))) return { error: INVALID };

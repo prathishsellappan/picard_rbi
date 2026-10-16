@@ -27,7 +27,7 @@ function fail(message: string): ActionResult {
 function errorResult(error: unknown): ActionResult {
   if (error instanceof AuthError) return fail(error.message);
   const pgCode = (error as { code?: string }).code;
-  if (pgCode === "23505") return fail("That ID or wallet address is already used in this scenario.");
+  if (pgCode === "23505") return fail("That ID, login username or wallet address is already used in this scenario.");
   console.error(error);
   return fail(error instanceof Error ? error.message : "Unexpected error.");
 }
@@ -37,6 +37,14 @@ const participantSchema = z.object({
     .string()
     .trim()
     .regex(/^P\d{2}$/, "ID must look like P01"),
+  username: z
+    .string()
+    .trim()
+    .toLowerCase()
+    .regex(
+      /^[a-z][a-z0-9]{2,31}$/,
+      "Login username: 3–32 lowercase letters/digits, starting with a letter (e.g. investor3)",
+    ),
   displayName: z.string().trim().min(1).max(80),
   role: z.enum(PARTICIPANT_ROLES),
   walletAddress: z.string(),
@@ -48,6 +56,7 @@ const participantSchema = z.object({
 function readParticipantForm(formData: FormData) {
   return participantSchema.safeParse({
     id: formData.get("id"),
+    username: formData.get("username"),
     displayName: formData.get("displayName"),
     role: formData.get("role"),
     walletAddress: formData.get("walletAddress"),
@@ -79,9 +88,9 @@ export async function updateParticipantAction(_prev: ActionResult, formData: For
 
     const found = await transaction(async (q) => {
       const updated = await q(
-        `UPDATE participants SET display_name = $3, role = $4, wallet_address = $5
+        `UPDATE participants SET display_name = $3, role = $4, wallet_address = $5, username = $6
           WHERE scenario_id = $1 AND id = $2 RETURNING id`,
-        [scenarioId, p.id, p.displayName, p.role, wallet],
+        [scenarioId, p.id, p.displayName, p.role, wallet, p.username],
       );
       if (updated.length === 0) return false;
       await q(
@@ -124,9 +133,9 @@ export async function createParticipantAction(_prev: ActionResult, formData: For
     const passwordHash = await hashPassword(password);
     await transaction(async (q) => {
       await q(
-        `INSERT INTO participants (id, scenario_id, display_name, role, wallet_address, password_hash)
-       VALUES ($1, $2, $3, $4, $5, $6)`,
-        [p.id, scenarioId, p.displayName, p.role, wallet, passwordHash],
+        `INSERT INTO participants (id, scenario_id, display_name, role, wallet_address, password_hash, username)
+       VALUES ($1, $2, $3, $4, $5, $6, $7)`,
+        [p.id, scenarioId, p.displayName, p.role, wallet, passwordHash, p.username],
       );
       await q(
         `INSERT INTO participant_private (scenario_id, participant_id, instructions, is_malicious, organizer_notes)
@@ -140,7 +149,7 @@ export async function createParticipantAction(_prev: ActionResult, formData: For
       ]);
     });
     revalidatePath("/organizer", "layout");
-    return { ok: true, message: `Created ${p.id}. Login card password (shown once): ${password}` };
+    return { ok: true, message: `Created ${p.id}. Login card: ${p.username} / ${password} (password shown once)` };
   } catch (error) {
     return errorResult(error);
   }

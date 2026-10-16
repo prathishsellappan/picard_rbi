@@ -78,7 +78,7 @@ try {
     role: roleForIndex(k + 1),
     address: w.address,
   }));
-  const { scenarioId, passwords } = await insertScenario(client, {
+  const { scenarioId, passwords, usernames } = await insertScenario(client, {
     name,
     chainId,
     exchange1,
@@ -98,6 +98,7 @@ try {
     name,
     participants: participants.map((p, k) => ({
       ...p,
+      username: usernames.get(p.id),
       privateKey: wallets[k].privateKey,
       loginPassword: passwords.get(p.id),
     })),
@@ -106,8 +107,11 @@ try {
     organizerPassword,
   };
   await writeFile(`${base}-wallets.json`, JSON.stringify(secrets, null, 2) + "\n", { mode: 0o600 });
-  const cards = ["login,password", ...participants.map((p) => `${p.id},${passwords.get(p.id)}`)];
-  if (organizerPassword) cards.push(`organizer,${organizerPassword}`);
+  const cards = [
+    "login,password,role,participant_id",
+    ...participants.map((p) => `${usernames.get(p.id)},${passwords.get(p.id)},${p.role},${p.id}`),
+  ];
+  if (organizerPassword) cards.push(`organizer,${organizerPassword},organizer,`);
   await writeFile(`${base}-login-cards.csv`, cards.join("\n") + "\n", { mode: 0o600 });
 
   console.log(`provisioned scenario #${scenarioId} "${name}" on chain ${chainId}: 15 participants + Exchange 1/2`);

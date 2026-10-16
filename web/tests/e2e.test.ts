@@ -53,7 +53,7 @@ const MALICIOUS = "P03";
 
 type Secrets = {
   scenarioId: number;
-  participants: { id: string; role: ParticipantUser["role"]; address: string; privateKey: string }[];
+  participants: { id: string; username: string; role: ParticipantUser["role"]; address: string; privateKey: string }[];
   exchange1: { address: string };
   exchange2: { address: string };
 };
@@ -138,6 +138,7 @@ beforeAll(async () => {
       kind: "participant",
       scenarioId: sid,
       participantId: p.id,
+      username: p.username,
       displayName: p.id,
       role: p.role,
       walletAddress: p.address,

@@ -29,17 +29,19 @@ try {
   );
   if (!scenario.rows[0]) throw new Error("No active local scenario. Run npm run db:seed first.");
   const { id, exchange1_address, exchange2_address } = scenario.rows[0];
-  const { rows } = await client.query<{ id: string; role: string; wallet_address: string }>(
-    "SELECT id, role, wallet_address FROM participants WHERE scenario_id = $1 ORDER BY id",
+  const { rows } = await client.query<{ id: string; username: string; role: string; wallet_address: string }>(
+    "SELECT id, username, role, wallet_address FROM participants WHERE scenario_id = $1 ORDER BY id",
     [id],
   );
 
-  const lines = ["wallet,role,address,private_key"];
-  const add = (label: string, role: string, address: string) =>
-    lines.push(`${label},${role},${address},${devKeys.get(address.toLowerCase()) ?? "(not a Hardhat dev account)"}`);
-  add("Exchange 1", "organizer", exchange1_address);
-  for (const p of rows) add(p.id, p.role, p.wallet_address);
-  add("Exchange 2", "organizer", exchange2_address);
+  const lines = ["login,participant_id,role,address,private_key"];
+  const add = (login: string, id: string, role: string, address: string) =>
+    lines.push(
+      `${login},${id},${role},${address},${devKeys.get(address.toLowerCase()) ?? "(not a Hardhat dev account)"}`,
+    );
+  add("(Exchange 1)", "", "organizer", exchange1_address);
+  for (const p of rows) add(p.username, p.id, p.role, p.wallet_address);
+  add("(Exchange 2)", "", "organizer", exchange2_address);
 
   const dir = path.join(import.meta.dirname, "..", "..", "organizer-secrets");
   await mkdir(dir, { recursive: true });

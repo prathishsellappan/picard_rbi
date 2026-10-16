@@ -58,8 +58,8 @@ readable only by your Mac user.
 
 | File | Contents | Use |
 |---|---|---|
-| `credentials-local.csv` | `login,password` for P01–P15 and `organizer` | Print one **login card** per participant. Keep the organizer line to yourself. |
-| `local-wallet-keys.csv` | For every wallet: role, address, private key | Import each participant's key into MetaMask on their browser (section 3). |
+| `credentials-local.csv` | `login,password,role,participant_id` for every participant and `organizer` | Print one **login card** per participant (login and password). Keep the organizer line to yourself. |
+| `local-wallet-keys.csv` | For every wallet: login, participant ID, role, address, private key | Import each participant's key into MetaMask on their browser (section 3). |
 
 The local keys are Hardhat's public development keys. They only work on this local chain and
 have no value anywhere else. Sepolia keys are different and come from `npm run provision` (see
@@ -68,17 +68,20 @@ have no value anywhere else. Sepolia keys are different and come from `npm run p
 To issue **new** passwords, stop `npm run local`, run `npm run db:seed -- --reset`, then start
 again. This also clears the scenario's settings and instructions back to the defaults.
 
-Default roles (P01–P05 creators, P06–P14 investors, P15 mule):
+Logins are role-based. Each participant also has an internal **participant ID** (P01–P15). The
+explorer labels wallets only by that ID, so participants can't tell from the explorer which wallet
+belongs to which role.
 
-| Login | Role | Wallet (Hardhat account) |
-|---|---|---|
-| P01–P05 | Creator | accounts 1–5 |
-| P06–P14 | Investor | accounts 6–14 |
-| P15 | Mule | account 15 |
-| Exchange 1 | Organizer: funding source | account 0 |
-| Exchange 2 | Organizer: final destination | account 16 |
+| Login | Display name | Participant ID | Role | Wallet (Hardhat account) |
+|---|---|---|---|---|
+| `creator1`–`creator5` | Creator 1–5 | P01–P05 | Creator | accounts 1–5 |
+| `investor1`–`investor9` | Investor 1–9 | P06–P14 | Investor | accounts 6–14 |
+| `mule` | Mule | P15 | Mule | account 15 |
+| `organizer` | — | — | Organizer | — |
+| — | Exchange 1 | — | Funding source | account 0 |
+| — | Exchange 2 | — | Final destination | account 16 |
 
-The **malicious creator** is **P03** by default. Change it on the **Participants** page.
+The **malicious creator** is **`creator3` (P03)** by default. Change it on the **Participants** page.
 
 ---
 
@@ -101,9 +104,11 @@ In each profile:
    offers to add the network.
 3. Import the wallet: MetaMask → account menu → **Add account or hardware wallet → Import
    account** → paste that participant's `private_key` from `local-wallet-keys.csv`. Rename the
-   account to the login, for example `P07`.
-4. Open `http://localhost:3000`, log in with the participant's card, click **Connect MetaMask**
-   and check the panel turns green: *Assigned wallet connected*.
+   account to the login, for example `investor2`.
+4. Open `http://localhost:3000`, log in with the participant's card, click **Connect MetaMask**,
+   and in the MetaMask window tick **only** that participant's account. Check the panel turns
+   green: *Assigned wallet connected*. If it says *connected to a different account*, click
+   **Choose account in MetaMask** and pick the right one.
 
 Every wallet starts with about 10,000 test ETH on the local chain, because Hardhat
 pre-funds its dev accounts. The Exchange 1 funding still shows up on-chain as evidence, but it
@@ -140,8 +145,9 @@ Each participant has a card. Click **Save** after changing anything.
 
 | Field | Notes |
 |---|---|
-| ID | Fixed, for example `P07`. |
-| Display name | Shown on that participant's dashboard ("Welcome, …"). |
+| ID | Fixed participant ID, for example `P07`. It's also the neutral label in the explorer. |
+| Login username | What the participant types to log in, for example `investor2` (lowercase letters and digits). |
+| Display name | Shown on that participant's dashboard ("Welcome, …") and in the top bar. |
 | Role | creator / investor / mule. |
 | Assigned wallet | The address their MetaMask must use. Change it before the contracts are deployed (see below). |
 | Instructions | **Shown only to this participant**, in their *Your instructions* panel. Put their briefing here. |
@@ -149,7 +155,7 @@ Each participant has a card. Click **Save** after changing anything.
 | Malicious creator | Only one creator should have it. Never shown to participants or in the explorer. |
 
 - **Reset password** gives that participant a new password, shown once, and logs them out.
-- **Add participant** creates a new login; its password is shown once.
+- **Add participant** creates a new login (ID, username, role, wallet); its password is shown once.
 
 If you change a creator's wallet after deployment, approve the new wallet on the factory with
 `npm run register-creators:local -w contracts`. A new wallet also needs funding:
@@ -171,15 +177,15 @@ If you change a creator's wallet after deployment, approve the new wallet on the
 
 Write these in each participant's **Instructions** field, adapted to your lesson:
 
-- **Honest creators (P01, P02, P04, P05):** "Create a project with an attractive name and
+- **Honest creators (`creator1`, `creator2`, `creator4`, `creator5`):** "Create a project with an attractive name and
   description. Set a mint price. Withdraw or don't, as your briefing says."
-- **Malicious creator (default P03):** "Create a convincing project. When investors have minted,
+- **Malicious creator (default `creator3`):** "Create a convincing project. When investors have minted,
   withdraw everything using **Withdraw funds → Max**. Then use **Send test ETH** to send the full
-  amount to this address: `<the mule's wallet address>`." Copy the mule's address from the
-  **Participants** page or the Explorer, since the creator needs it.
-- **Investors (P06–P14):** "Mint NFTs from the projects named here: …" Naming the malicious
+  amount to this address: `<the mule's wallet address>`." Copy the mule's address (P15) from the
+  **Participants** page, since the creator needs it.
+- **Investors (`investor1`–`investor9`):** "Mint NFTs from the projects named here: …" Naming the malicious
   project for several investors makes the money trail clearer.
-- **Mule (P15):** "When test ETH arrives in your wallet, forward it with **Transfer to
+- **Mule (`mule`):** "When test ETH arrives in your wallet, forward it with **Transfer to
   Exchange 2 → Max**."
 
 The malicious creator's dashboard looks exactly like the others. Every creator has the same
@@ -202,7 +208,8 @@ The malicious creator's dashboard looks exactly like the others. Every creator h
 
 ### 5.3 Monitoring
 
-- **Overview → Participant progress** for who has done what.
+- **Overview → Participant progress** for who has done what. Each row shows the participant ID
+  and login.
 - **Explorer → Latest scenario transactions** for everything as it happens.
 - The terminal running `npm run local` prints `[indexer] up to block …` as new blocks arrive,
   and `[web]` lines for website errors.
@@ -239,7 +246,8 @@ Run these from the repository folder.
 ## 8. Good to know
 
 - **Only you** see roles, the malicious flag, organizer notes and other participants'
-  instructions. The explorer labels wallets only as `P01`…`P15` and `Exchange 1/2`.
+  instructions. The explorer labels wallets only as `P01`…`P15` and `Exchange 1/2`, never by
+  login name.
 - Participants can't change their role or wallet. The server decides both from their login,
   and it checks on the blockchain that every transaction they report came from their assigned
   wallet.

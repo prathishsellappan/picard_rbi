@@ -8,7 +8,8 @@ export type AppRole = ParticipantRole | "organizer";
 export type ParticipantUser = {
   kind: "participant";
   scenarioId: number;
-  participantId: string;
+  participantId: string; // internal ID and neutral public label, e.g. P01
+  username: string; // role-based login, e.g. creator1
   displayName: string;
   role: ParticipantRole;
   walletAddress: string;

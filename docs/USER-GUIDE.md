@@ -20,7 +20,8 @@ your login card. Your organizer may give you only the sections for your role.
 
 ### A1. What you get from the organizer
 
-- **A login card** with your **login** (for example `P07`) and a **password**.
+- **A login card** with your **login** and a **password**. The login tells you your role:
+  `creator1`–`creator5`, `investor1`–`investor9`, or `mule`.
 - **A prepared computer or browser.** MetaMask is installed, your assigned wallet is already
   imported, and the right network is selected. You don't create a wallet, and you never type a
   seed phrase or private key.
@@ -35,15 +36,16 @@ different password from your website password.
 2. The yellow bar at the top shows the network: **Local Hardhat** or **Sepolia**. It always says
    *Assets have no monetary value*.
 3. On **Role-play login**, enter:
-   - **Login**: exactly as on your card. Upper or lower case doesn't matter (`p07` works).
+   - **Login**: as on your card, for example `investor3`. Upper or lower case and spaces don't
+     matter, so `Investor 3` works too.
    - **Password**: exactly as on your card. Upper and lower case **do** matter.
 4. Click **Log in**. You land on your own dashboard automatically.
 
 If you see **Invalid login or password**, check the password carefully: cards avoid confusable
 characters such as `0`/`O` and `1`/`l`. Ask the organizer if it still fails, since they can reset it.
 
-Your login lasts up to 12 hours. **Log out** is at the top right. The top bar also shows your
-login and role, for example `P07 · investor`.
+Your login lasts up to 12 hours. **Log out** is at the top right. The top bar shows your name
+and login, for example `Investor 3 (investor3)`.
 
 ### A3. Connecting your wallet
 
@@ -55,7 +57,7 @@ organizer gave you, and whether MetaMask is ready.
 | *Checking MetaMask…* | The page is looking for MetaMask. | Wait a second. |
 | *MetaMask is not installed in this browser* | No MetaMask in this browser. | Ask the organizer. |
 | *Connect MetaMask to continue.* | MetaMask hasn't shared an account with the site yet. | Click **Connect MetaMask** and approve in the MetaMask window. |
-| *This is not your assigned wallet…* | MetaMask is on a different account. The panel shows both addresses. | In MetaMask, switch to your assigned account, the one named with your login, then click **Connect MetaMask** again. |
+| *MetaMask is connected to a different account…* | MetaMask is using another account. The panel shows both addresses and numbered steps. | Click **Choose account in MetaMask**. In the MetaMask window, select **only** the account whose address ends with the four characters shown, then confirm. If that account isn't in MetaMask, ask the organizer. |
 | *MetaMask is on the wrong network* | MetaMask is on another network. | Click **Switch to …** and approve in MetaMask. |
 | *Assigned wallet connected.* (green) | Everything is ready, and your **Balance** is shown. | You can now use your dashboard. |
 
@@ -213,8 +215,8 @@ Paste a full **wallet or contract address** (`0x` + 40 characters) or a **transa
 
 ### E2. Explorer home
 
-- **Scenario addresses**: every wallet and contract in the role-play. Wallets are labelled by
-  login (`P01`…`P15`), plus **Exchange 1** and **Exchange 2**. Contracts are labelled by name,
+- **Scenario addresses**: every wallet and contract in the role-play. Wallets are labelled
+  neutrally as `P01`…`P15` (not by login name), plus **Exchange 1** and **Exchange 2**. Contracts are labelled by name,
   and projects show as `Project: <name>`. Click any label to open its page.
 - **Latest scenario transactions**: block, time, transaction, method, from, to, value, status.
 - A line shows how far the index has caught up, for example *Indexed up to block 120*.
@@ -245,7 +247,7 @@ Addresses inside are clickable. On Sepolia, **View on Etherscan** opens the publ
 | Problem | Try this |
 |---|---|
 | Buttons are grey | The wallet panel isn't green. Follow its message (section A3). |
-| *This is not your assigned wallet* | Switch MetaMask to the account named with your login. |
+| *MetaMask is connected to a different account* | Click **Choose account in MetaMask** and select your assigned account (section A3). |
 | MetaMask didn't open | Click the MetaMask fox icon in the browser toolbar. The request may be waiting there. |
 | Stuck on **pending** | Wait, then click **Check again**. Don't send the same thing twice. |
 | *Not enough test ETH* | Your balance doesn't cover the amount plus gas. Tell the organizer. |

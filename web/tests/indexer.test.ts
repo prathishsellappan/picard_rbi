@@ -38,8 +38,9 @@ beforeAll(async () => {
     )
   ).rows[0].id;
   await db.query(
-    `INSERT INTO participants (id, scenario_id, display_name, role, wallet_address, password_hash) VALUES
-     ('P01', $1, 'C', 'creator', $2, 'x'), ('P06', $1, 'I', 'investor', $3, 'x'), ('P15', $1, 'M', 'mule', $4, 'x')`,
+    `INSERT INTO participants (id, scenario_id, display_name, role, wallet_address, password_hash, username) VALUES
+     ('P01', $1, 'C', 'creator', $2, 'x', 'creator1'), ('P06', $1, 'I', 'investor', $3, 'x', 'investor1'),
+     ('P15', $1, 'M', 'mule', $4, 'x', 'mule')`,
     [sid, a[1], a[6], a[15]],
   );
   await db.query(

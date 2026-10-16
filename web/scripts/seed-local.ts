@@ -58,7 +58,7 @@ try {
     role: roleForIndex(k + 1),
     address: hardhatAddress(k + 1),
   }));
-  const { scenarioId, passwords } = await insertScenario(client, {
+  const { scenarioId, passwords, usernames } = await insertScenario(client, {
     name: "Local rehearsal",
     chainId: LOCAL_CHAIN_ID,
     exchange1: hardhatAddress(0),
@@ -70,10 +70,10 @@ try {
   await client.query("COMMIT");
 
   const lines = [
-    "login,password,display_name",
-    ...participants.map((p) => `${p.id},${passwords.get(p.id)},Participant ${p.id}`),
+    "login,password,role,participant_id",
+    ...participants.map((p) => `${usernames.get(p.id)},${passwords.get(p.id)},${p.role},${p.id}`),
   ];
-  lines.push(`organizer,${organizerPassword},Organizer`);
+  lines.push(`organizer,${organizerPassword},organizer,`);
   const secretsDir = path.join(import.meta.dirname, "..", "..", "organizer-secrets");
   await mkdir(secretsDir, { recursive: true });
   const file = path.join(secretsDir, "credentials-local.csv");

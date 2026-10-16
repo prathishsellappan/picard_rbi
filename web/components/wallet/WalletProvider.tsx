@@ -21,6 +21,7 @@ type WalletContextValue = {
   error: string | null;
   connecting: boolean;
   connect(): Promise<void>;
+  chooseAccount(): Promise<void>;
   switchNetwork(): Promise<void>;
   // Re-checks account and chain with MetaMask right before signing. Throws if not ready.
   getVerifiedSigner(): Promise<JsonRpcSigner>;
@@ -106,6 +107,29 @@ export function WalletProvider({ assignedWallet, children }: { assignedWallet: s
     }
   }, [refresh]);
 
+  // When MetaMask is connected with the wrong account, eth_requestAccounts just returns that same
+  // account. wallet_requestPermissions reopens MetaMask's account picker so the participant can
+  // select their assigned account instead.
+  const chooseAccount = useCallback(async () => {
+    const eth = injected();
+    if (!eth) return;
+    setError(null);
+    setConnecting(true);
+    try {
+      await eth.request({ method: "wallet_requestPermissions", params: [{ eth_accounts: {} }] });
+      await refresh(false);
+    } catch (e) {
+      const code = (e as { code?: number }).code;
+      if (code === -32601) {
+        await refresh(true).catch(() => {}); // wallet without the permissions API
+      } else {
+        setError(code === 4001 ? "Account selection was cancelled." : "Could not open MetaMask's account picker.");
+      }
+    } finally {
+      setConnecting(false);
+    }
+  }, [refresh]);
+
   // Only runs when the participant clicks the button; the app never switches networks silently.
   const switchNetwork = useCallback(async () => {
     const eth = injected();
@@ -160,10 +184,22 @@ export function WalletProvider({ assignedWallet, children }: { assignedWallet: s
       error,
       connecting,
       connect,
+      chooseAccount,
       switchNetwork,
       getVerifiedSigner,
     }),
-    [snapshot, checked, assignedWallet, chain.id, error, connecting, connect, switchNetwork, getVerifiedSigner],
+    [
+      snapshot,
+      checked,
+      assignedWallet,
+      chain.id,
+      error,
+      connecting,
+      connect,
+      chooseAccount,
+      switchNetwork,
+      getVerifiedSigner,
+    ],
   );
 
   return <WalletContext value={value}>{children}</WalletContext>;
@@ -182,7 +218,7 @@ export function statusMessage(status: WalletStatus, chainName: string): string {
     case "disconnected":
       return "Connect MetaMask to continue.";
     case "wrong-account":
-      return "This is not your assigned wallet. Please connect your assigned wallet in MetaMask.";
+      return "MetaMask is connected to a different account, not your assigned wallet.";
     case "wrong-network":
       return `MetaMask is on the wrong network. Switch to ${chainName}.`;
     case "ready":

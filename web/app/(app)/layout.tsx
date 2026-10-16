@@ -9,7 +9,7 @@ export default async function AppLayout({ children }: { children: ReactNode }) {
   // Layouts don't re-run on every navigation, so each page also checks its own role.
   const user = await requireUser();
   const role = roleOf(user);
-  const who = user.kind === "organizer" ? `Organizer (${user.username})` : `${user.participantId} · ${user.role}`;
+  const who = user.kind === "organizer" ? `Organizer (${user.username})` : `${user.displayName} (${user.username})`;
 
   return (
     <>

@@ -43,8 +43,8 @@ beforeAll(async () => {
   const sid = rows[0].id;
   const pw = await hashPassword("x");
   await db.query(
-    `INSERT INTO participants (id, scenario_id, display_name, role, wallet_address, password_hash)
-     VALUES ('P01', $1, 'C', 'creator', $2, $4), ('P15', $1, 'M', 'mule', $3, $4)`,
+    `INSERT INTO participants (id, scenario_id, display_name, role, wallet_address, password_hash, username)
+     VALUES ('P01', $1, 'C', 'creator', $2, $4, 'creator1'), ('P15', $1, 'M', 'mule', $3, $4, 'mule')`,
     [sid, accounts[1], accounts[15], pw],
   );
   await db.query("INSERT INTO organizers (username, password_hash) VALUES ('organizer', $1)", [pw]);
@@ -54,6 +54,7 @@ beforeAll(async () => {
     kind: "participant",
     scenarioId: sid,
     participantId: "P01",
+    username: "creator1",
     displayName: "C",
     role: "creator",
     walletAddress: accounts[1],
@@ -62,6 +63,7 @@ beforeAll(async () => {
     kind: "participant",
     scenarioId: sid,
     participantId: "P15",
+    username: "mule",
     displayName: "M",
     role: "mule",
     walletAddress: accounts[15],

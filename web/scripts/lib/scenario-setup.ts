@@ -16,6 +16,26 @@ export function participantId(i: number): string {
   return `P${String(i).padStart(2, "0")}`;
 }
 
+// Role-based login usernames: creator1…, investor1…, and "mule" when there is a single mule.
+export function usernamesFor(participants: { id: string; role: Role }[]): Map<string, string> {
+  const counts = new Map<Role, number>();
+  for (const p of participants) counts.set(p.role, (counts.get(p.role) ?? 0) + 1);
+  const seen = new Map<Role, number>();
+  const names = new Map<string, string>();
+  for (const p of participants) {
+    const n = (seen.get(p.role) ?? 0) + 1;
+    seen.set(p.role, n);
+    names.set(p.id, p.role === "mule" && counts.get("mule") === 1 ? "mule" : `${p.role}${n}`);
+  }
+  return names;
+}
+
+// "creator1" → "Creator 1", "mule" → "Mule".
+export function displayNameFor(username: string): string {
+  const [, word, num] = /^([a-z]+)(\d*)$/.exec(username) ?? [, username, ""];
+  return `${word[0].toUpperCase()}${word.slice(1)}${num ? ` ${num}` : ""}`;
+}
+
 export const DEFAULT_INSTRUCTIONS: Record<Role, string> = {
   creator: "Create your project, set a mint price, and follow the organizer's briefing for your project.",
   investor: "Browse the marketplace and mint NFTs from the projects named in your briefing.",
@@ -43,7 +63,7 @@ export type ScenarioInput = {
 export async function insertScenario(
   client: pg.Client,
   input: ScenarioInput,
-): Promise<{ scenarioId: number; passwords: Map<string, string> }> {
+): Promise<{ scenarioId: number; passwords: Map<string, string>; usernames: Map<string, string> }> {
   const scenario = await client.query<{ id: number }>(
     `INSERT INTO scenarios (name, chain_id, is_active, exchange1_address, exchange2_address)
      VALUES ($1, $2, TRUE, $3, $4) RETURNING id`,
@@ -51,14 +71,16 @@ export async function insertScenario(
   );
   const scenarioId = scenario.rows[0].id;
   const passwords = new Map<string, string>();
+  const usernames = usernamesFor(input.participants);
 
   for (const p of input.participants) {
     const password = generateCardPassword();
     passwords.set(p.id, password);
+    const username = usernames.get(p.id)!;
     await client.query(
-      `INSERT INTO participants (id, scenario_id, display_name, role, wallet_address, password_hash)
-       VALUES ($1, $2, $3, $4, $5, $6)`,
-      [p.id, scenarioId, `Participant ${p.id}`, p.role, p.address, await hashPassword(password)],
+      `INSERT INTO participants (id, scenario_id, display_name, role, wallet_address, password_hash, username)
+       VALUES ($1, $2, $3, $4, $5, $6, $7)`,
+      [p.id, scenarioId, displayNameFor(username), p.role, p.address, await hashPassword(password), username],
     );
     await client.query(
       `INSERT INTO participant_private (scenario_id, participant_id, instructions, is_malicious)
@@ -85,7 +107,7 @@ export async function insertScenario(
       parseEther(amounts.scenario).toString(),
     ]);
   }
-  return { scenarioId, passwords };
+  return { scenarioId, passwords, usernames };
 }
 
 // Ensures an organizer login exists. Returns a new password only if one was created or reset.
