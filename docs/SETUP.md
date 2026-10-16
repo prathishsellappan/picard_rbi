@@ -51,6 +51,7 @@ npm run fund:local -w contracts      # Exchange 1 → all 15 participant wallets
 ```
 
 Contract details, permissions and events: [CONTRACTS.md](CONTRACTS.md).
+Read-only readiness check: `npm run preflight:local -w contracts`. For Sepolia, follow [SEPOLIA.md](SEPOLIA.md).
 
 **Local reset.** Stopping the Hardhat node erases the local chain. The database then still points
 at contracts that no longer exist, so reset both:

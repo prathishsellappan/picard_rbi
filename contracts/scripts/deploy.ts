@@ -3,7 +3,8 @@
 //
 //   npx hardhat run scripts/deploy.ts --network localhost
 //
-// Env: NFT_BASE_URI (default http://localhost:3000/api/nft/), REDEPLOY=1 to replace an existing deployment.
+// Env: NFT_BASE_URI (default http://localhost:3000/api/nft/; must be the hosted https app on
+//      Sepolia), REDEPLOY=1 to replace an existing deployment.
 import { mkdir, writeFile } from "node:fs/promises";
 import path from "node:path";
 import type { ContractTransactionResponse } from "ethers";
@@ -18,6 +19,9 @@ try {
     throw new Error(`Scenario "${scenario.name}" already has contracts. Set REDEPLOY=1 to deploy a new set.`);
   }
   const baseUri = process.env.NFT_BASE_URI ?? "http://localhost:3000/api/nft/";
+  if (chainId === 11155111 && !/^https:\/\/(?!localhost|127\.0\.0\.1)/.test(baseUri)) {
+    throw new Error("On Sepolia set NFT_BASE_URI to the hosted app, e.g. https://your-app.vercel.app/api/nft/");
+  }
   const minPrice = BigInt(scenario.min_mint_price_wei);
   const maxPrice = BigInt(scenario.max_mint_price_wei);
 

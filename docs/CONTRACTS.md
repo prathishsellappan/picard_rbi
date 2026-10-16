@@ -81,6 +81,8 @@ All of these refuse to run unless the connected chain is 31337 or 11155111 and m
 | `scripts/register-creators.ts` | `setCreatorAllowed` for every creator in the scenario. Skips creators already allowed. |
 | `scripts/fund-wallets.ts` | Exchange 1 sends each participant gas + scenario funds in one transfer, recording each in `funding_transfers` (requested → pending → confirmed/failed). Checks the signer is the scenario's Exchange 1 and has enough balance. Skips wallets already funded. |
 | `scripts/export-abis.ts` | Copies ABIs into `web/lib/abi/`. |
+| `scripts/preflight.ts` | Read-only readiness check: chain/config agreement, scenario shape, organizer balances against the measured gas budget, per-role gas funding, deployed code and wiring. |
+| `scripts/verify-sepolia.ts` | Verifies NFT, factory, marketplace and every factory-created project on Etherscan (production build profile). |
 
 Signers: locally, Hardhat account 0 is Exchange 1 and account 17 deploys. On Sepolia, signer 0 is
 the deployer and signer 1 is Exchange 1, both read from the Hardhat keystore (`SEPOLIA_DEPLOYER_PRIVATE_KEY`,

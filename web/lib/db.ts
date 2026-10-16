@@ -7,7 +7,10 @@ const globalForDb = globalThis as unknown as { picardPool?: Pool };
 
 function getPool(): Pool {
   if (!globalForDb.picardPool) {
-    globalForDb.picardPool = new Pool({ connectionString: getServerConfig().databaseUrl, max: 10 });
+    // Serverless hosts (Vercel) run many small instances: keep each pool small so a hosted
+    // Postgres (e.g. Supabase's pooler) isn't exhausted.
+    const max = process.env.VERCEL ? 3 : 10;
+    globalForDb.picardPool = new Pool({ connectionString: getServerConfig().databaseUrl, max });
   }
   return globalForDb.picardPool;
 }
