@@ -131,16 +131,18 @@ export function WalletProvider({ assignedWallet, children }: { assignedWallet: s
   }, [refresh]);
 
   // Only runs when the participant clicks the button; the app never switches networks silently.
+  // If MetaMask doesn't know the network yet (code 4902), it is asked to add it. Every failure
+  // ends in a readable message; MetaMask rejects with plain objects, not Error instances.
   const switchNetwork = useCallback(async () => {
     const eth = injected();
     if (!eth) return;
     setError(null);
     const chainIdHex = toChainIdHex(chain.id);
     try {
-      await eth.request({ method: "wallet_switchEthereumChain", params: [{ chainId: chainIdHex }] });
-    } catch (e) {
-      const code = (e as { code?: number }).code;
-      if (code === 4902 && chain.walletRpcUrl) {
+      try {
+        await eth.request({ method: "wallet_switchEthereumChain", params: [{ chainId: chainIdHex }] });
+      } catch (e) {
+        if (walletErrorCode(e) !== 4902 || !chain.walletRpcUrl) throw e;
         await eth.request({
           method: "wallet_addEthereumChain",
           params: [
@@ -148,13 +150,17 @@ export function WalletProvider({ assignedWallet, children }: { assignedWallet: s
               chainId: chainIdHex,
               chainName: chain.name,
               rpcUrls: [chain.walletRpcUrl],
-              nativeCurrency: { name: "Test ETH", symbol: "ETH", decimals: 18 },
+              nativeCurrency: { name: "Ether", symbol: "ETH", decimals: 18 },
             },
           ],
         });
-      } else {
-        setError(code === 4001 ? "Network switch was rejected." : `Please switch MetaMask to ${chain.name}.`);
       }
+    } catch (e) {
+      setError(
+        walletErrorCode(e) === 4001
+          ? "The network change was cancelled in MetaMask."
+          : `MetaMask couldn't switch automatically${walletErrorMessage(e)}. Add the network by hand using the settings below.`,
+      );
     }
     await refresh(false).catch(() => {});
   }, [chain, refresh]);
@@ -224,4 +230,15 @@ export function statusMessage(status: WalletStatus, chainName: string): string {
     case "ready":
       return "Assigned wallet connected.";
   }
+}
+
+// MetaMask sometimes nests the real error code (e.g. 4902 "unknown chain") inside data.originalError.
+function walletErrorCode(error: unknown): number | undefined {
+  const e = error as { code?: number; data?: { originalError?: { code?: number } } } | null;
+  return e?.data?.originalError?.code ?? e?.code;
+}
+
+function walletErrorMessage(error: unknown): string {
+  const message = (error as { message?: unknown } | null)?.message;
+  return typeof message === "string" && message ? ` (${message})` : "";
 }

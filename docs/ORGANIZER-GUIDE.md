@@ -101,7 +101,13 @@ In each profile:
    - Currency symbol: `ETH`
 
    Alternatively, after logging in, click **Switch to Local Hardhat** in the wallet panel; it
-   offers to add the network.
+   offers to add the network. If MetaMask refuses, the panel shows these same settings for adding
+   it by hand.
+
+   **Common trap:** MetaMask may already have a network called *Localhost 8545* that uses the
+   same RPC URL but chain ID **1337**. Selecting it still shows "wrong network". MetaMask may also
+   refuse the new network because the URL is already in use. Fix it by editing that existing
+   network and setting its chain ID to **31337**, or delete it and add `Local Hardhat` as above.
 3. Import the wallet: MetaMask → account menu → **Add account or hardware wallet → Import
    account** → paste that participant's `private_key` from `local-wallet-keys.csv`. Rename the
    account to the login, for example `investor2`.

@@ -58,7 +58,7 @@ organizer gave you, and whether MetaMask is ready.
 | *MetaMask is not installed in this browser* | No MetaMask in this browser. | Ask the organizer. |
 | *Connect MetaMask to continue.* | MetaMask hasn't shared an account with the site yet. | Click **Connect MetaMask** and approve in the MetaMask window. |
 | *MetaMask is connected to a different account…* | MetaMask is using another account. The panel shows both addresses and numbered steps. | Click **Choose account in MetaMask**. In the MetaMask window, select **only** the account whose address ends with the four characters shown, then confirm. If that account isn't in MetaMask, ask the organizer. |
-| *MetaMask is on the wrong network* | MetaMask is on another network. | Click **Switch to …** and approve in MetaMask. |
+| *MetaMask is on the wrong network* | MetaMask is on another network. The panel shows the chain it is on and the one needed. | Click **Switch to …** and approve in MetaMask. If that doesn't work, the panel lists the exact settings (network name, RPC URL, chain ID, symbol) for adding the network by hand in MetaMask. |
 | *Assigned wallet connected.* (green) | Everything is ready, and your **Balance** is shown. | You can now use your dashboard. |
 
 All buttons that send transactions stay grey until the panel is green. If you switch accounts

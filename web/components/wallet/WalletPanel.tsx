@@ -48,6 +48,7 @@ export function WalletPanel() {
           <li>If that account isn&apos;t in MetaMask, ask the organizer to import it for you.</li>
         </ol>
       )}
+      {wallet.status === "wrong-network" && <NetworkHelp currentChainId={wallet.chainId} />}
       {wallet.status === "ready" && balance !== null && (
         <p className="mt-1 text-sm text-slate-600">Balance: {formatEther(balance)} test ETH</p>
       )}
@@ -99,4 +100,45 @@ export function useBalance(address: string | null): bigint | null {
   }, [address, getVerifiedSigner]);
 
   return address ? balance : null;
+}
+
+// Shown while MetaMask is on the wrong network: what it is on now, and the exact settings to add
+// the expected network by hand if the Switch button can't.
+function NetworkHelp({ currentChainId }: { currentChainId: number | null }) {
+  const chain = getConfiguredChain();
+  return (
+    <div className="mt-3 rounded border border-slate-200 bg-slate-50 p-3 text-sm text-slate-700">
+      <p>
+        MetaMask is on chain ID <strong>{currentChainId ?? "unknown"}</strong>; this role-play uses{" "}
+        <strong>{chain.id}</strong>. Click <strong>Switch to {chain.name}</strong>. If that doesn&apos;t work:
+      </p>
+      {chain.walletRpcUrl ? (
+        <>
+          <p className="mt-2">
+            In MetaMask open the network menu → <strong>Add a custom network</strong> (or Settings → Networks → Add
+            network → Add a network manually) and enter:
+          </p>
+          <dl className="mt-2 grid grid-cols-[9rem_1fr] gap-x-3 gap-y-1">
+            <dt className="text-slate-500">Network name</dt>
+            <dd>{chain.name}</dd>
+            <dt className="text-slate-500">RPC URL</dt>
+            <dd className="font-mono">{chain.walletRpcUrl}</dd>
+            <dt className="text-slate-500">Chain ID</dt>
+            <dd className="font-mono">{chain.id}</dd>
+            <dt className="text-slate-500">Currency symbol</dt>
+            <dd>ETH</dd>
+          </dl>
+          <p className="mt-2">
+            Save, select that network in MetaMask, then come back here. If MetaMask says the RPC URL can&apos;t be
+            reached, the organizer&apos;s local chain isn&apos;t running.
+          </p>
+        </>
+      ) : (
+        <p className="mt-2">
+          In MetaMask open the network menu, turn on <strong>Show test networks</strong>, and select{" "}
+          <strong>{chain.name}</strong>.
+        </p>
+      )}
+    </div>
+  );
 }
