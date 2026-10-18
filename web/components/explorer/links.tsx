@@ -5,17 +5,20 @@ import { explorerAddressUrl, explorerTxUrl, getConfiguredChain } from "@/lib/cha
 import type { Labels } from "@/lib/explorer";
 
 export function AddressLink({ address, labels }: { address: string | null; labels: Labels }) {
-  if (!address) return <span className="text-slate-400">—</span>;
+  if (!address) return <span className="text-ink-faint">—</span>;
   const label = labels.get(address.toLowerCase());
   address = getAddress(address.toLowerCase());
   return (
-    <Link href={`/explorer/address/${address}`} className="underline decoration-slate-300 hover:decoration-slate-700">
+    <Link
+      href={`/explorer/address/${address}`}
+      className="text-ink underline decoration-line-strong underline-offset-2 hover:decoration-saffron"
+    >
       {label ? (
         <span>
-          {label} <span className="font-mono text-xs text-slate-500">{shortAddress(address)}</span>
+          {label} <span className="font-mono text-[11.5px] text-ink-muted">{shortAddress(address)}</span>
         </span>
       ) : (
-        <span className="font-mono text-xs">{shortAddress(address)}</span>
+        <span className="font-mono text-[11.5px]">{shortAddress(address)}</span>
       )}
     </Link>
   );
@@ -25,7 +28,7 @@ export function TxLink({ hash }: { hash: string }) {
   return (
     <Link
       href={`/explorer/tx/${hash}`}
-      className="font-mono text-xs underline decoration-slate-300 hover:decoration-slate-700"
+      className="font-mono text-[11.5px] text-saffron-deep underline decoration-line-strong underline-offset-2 hover:decoration-saffron"
     >
       {shortAddress(hash)}
     </Link>
@@ -36,9 +39,14 @@ export function TxLink({ hash }: { hash: string }) {
 export function PublicExplorerLink({ kind, value }: { kind: "address" | "tx"; value: string }) {
   const chain = getConfiguredChain();
   const url = kind === "tx" ? explorerTxUrl(chain, value) : explorerAddressUrl(chain, value);
-  if (!url) return <span className="text-xs text-slate-500">(local chain: no public explorer)</span>;
+  if (!url) return <span className="text-[11.5px] text-ink-muted">(local chain: no public explorer)</span>;
   return (
-    <a href={url} target="_blank" rel="noreferrer" className="text-xs underline">
+    <a
+      href={url}
+      target="_blank"
+      rel="noreferrer"
+      className="text-[11.5px] text-saffron-deep underline decoration-line-strong underline-offset-2 hover:decoration-saffron"
+    >
       View on Etherscan (Sepolia) ↗
     </a>
   );

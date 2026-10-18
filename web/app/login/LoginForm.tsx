@@ -10,17 +10,19 @@ export function LoginForm() {
   const [state, formAction, pending] = useActionState(loginAction, initialState);
 
   return (
-    <form action={formAction} className="space-y-4 rounded-lg border border-slate-200 bg-white p-5 shadow-sm">
-      <label className="block text-sm">
-        <span className="mb-1 block font-medium">Login</span>
+    <form action={formAction} className="space-y-4 rounded-xl border border-line bg-card p-[14px]">
+      <label className="block text-[13px]">
+        <span className="mb-1 block text-[10px] font-semibold uppercase tracking-[0.06em] text-ink-faint">Login</span>
         <input name="login" autoComplete="username" required className={inputClass} placeholder="e.g. creator1" />
       </label>
-      <label className="block text-sm">
-        <span className="mb-1 block font-medium">Password</span>
+      <label className="block text-[13px]">
+        <span className="mb-1 block text-[10px] font-semibold uppercase tracking-[0.06em] text-ink-faint">
+          Password
+        </span>
         <input name="password" type="password" autoComplete="current-password" required className={inputClass} />
       </label>
       {state.error && (
-        <p role="alert" className="text-sm text-red-700">
+        <p role="alert" className="text-[12px] text-flag-deep">
           {state.error}
         </p>
       )}

@@ -32,7 +32,7 @@ export function SyncButton() {
       <button type="button" onClick={sync} disabled={busy} className={buttonClass}>
         {busy ? "Syncing…" : "Sync index now"}
       </button>
-      {message && <span className="text-sm text-slate-600">{message}</span>}
+      {message && <span className="text-[13px] text-ink-soft">{message}</span>}
     </div>
   );
 }

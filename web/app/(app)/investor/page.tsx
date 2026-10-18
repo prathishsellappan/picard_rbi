@@ -42,16 +42,16 @@ export default async function InvestorPage() {
         <Instructions text={instructions} />
       </div>
 
-      <h2 className="mb-3 mt-8 text-lg font-semibold">Projects</h2>
+      <h2 className="mb-3 mt-6 text-[10px] font-semibold uppercase tracking-[0.06em] text-ink-faint">Projects</h2>
       {!chain.ok ? (
         <ContractsNotReady message={chain.message} />
       ) : chain.projects.length === 0 ? (
-        <p className="text-sm text-slate-500">No projects have been created yet.</p>
+        <p className="text-[13px] text-ink-muted">No projects have been created yet.</p>
       ) : (
         <div className="grid gap-4 md:grid-cols-3">
           {chain.projects.map((project) => (
             <Card key={project.address} title={project.name}>
-              {project.description && <p className="mb-2 text-sm text-slate-600">{project.description}</p>}
+              {project.description && <p className="mb-2 text-[13px] text-ink-soft">{project.description}</p>}
               <div className="mb-3">
                 <ProjectFacts project={project} showFunds={false} />
               </div>
@@ -69,18 +69,18 @@ export default async function InvestorPage() {
       <div className="mt-8 grid gap-4 md:grid-cols-2">
         <Card title="My NFTs">
           {!chain.ok || chain.nfts.length === 0 ? (
-            <p className="text-sm text-slate-500">You don&apos;t own any NFTs yet.</p>
+            <p className="text-[13px] text-ink-muted">You don&apos;t own any NFTs yet.</p>
           ) : (
-            <ul className="divide-y divide-slate-100 text-sm">
+            <ul className="divide-y divide-line text-[13px]">
               {chain.nfts.map((nft) => (
                 <li key={nft.tokenId} className="flex justify-between py-2">
                   <span>Token #{nft.tokenId}</span>
-                  <span className="text-slate-600">{nameOf(nft.project)}</span>
+                  <span className="text-ink-soft">{nameOf(nft.project)}</span>
                 </li>
               ))}
             </ul>
           )}
-          <p className="mt-2 text-xs text-slate-500">Read from the NFT contract (on-chain ownership).</p>
+          <p className="mt-2 text-[11.5px] text-ink-muted">Read from the NFT contract (on-chain ownership).</p>
         </Card>
         <Card title="My transactions">
           <MyTransactionsList rows={txs} />

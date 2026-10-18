@@ -1,6 +1,138 @@
 @import "tailwindcss";
 
+/* PICARD look and feel (see the PICARD style guide): warm parchment page, off-white cards, tan
+   hairlines, warm charcoal text, and one accent — saffron — for the primary action and the
+   current selection. Green means clean / success; red only means failed or flagged.
+   Components use only these tokens, so the dark theme is one swap. */
+@theme {
+  /* surfaces */
+  --color-paper: #f5efe2;
+  --color-paper-deep: #eee4cf;
+  --color-card: #fdfaf3;
+  --color-card-tint: #faf4e7;
+  /* borders */
+  --color-line: #e5d9c3;
+  --color-line-strong: #d3c3a4;
+  /* text */
+  --color-ink: #2d2a26;
+  --color-ink-soft: #575046;
+  --color-ink-muted: #8a7d6b;
+  --color-ink-faint: #b3a68f;
+  /* saffron: the one accent */
+  --color-saffron: #e8871e;
+  --color-saffron-mark: #d9730d;
+  --color-saffron-deep: #a35408;
+  --color-saffron-tint: rgba(232, 135, 30, 0.12);
+  --color-on-primary: #3d2606;
+  /* green: wordmark, live, clean / success */
+  --color-green: #2e7d4f;
+  --color-green-deep: #22603c;
+  --color-green-tint: rgba(46, 125, 79, 0.12);
+  /* red: only failed / flagged */
+  --color-flag: #c62828;
+  --color-flag-deep: #a31515;
+  --color-flag-tint: rgba(198, 40, 40, 0.1);
+  /* warning */
+  --color-amber: #b45309;
+  --color-amber-tint: rgba(180, 83, 9, 0.12);
+}
+
 @theme inline {
   --font-sans: var(--font-geist-sans);
   --font-mono: var(--font-geist-mono);
+}
+
+:root[data-theme="dark"] {
+  color-scheme: dark;
+  --color-paper: #09090b;
+  --color-paper-deep: #0b0b0d;
+  --color-card: #0e0e10;
+  --color-card-tint: #161618;
+  --color-line: #1c1c20;
+  --color-line-strong: #26262b;
+  --color-ink: #e8e8ea;
+  --color-ink-soft: #c9c9cf;
+  --color-ink-muted: #8a8a90;
+  --color-ink-faint: #6a6a70;
+  --color-saffron: #dc2626;
+  --color-saffron-mark: #ef4444;
+  --color-saffron-deep: #f87171;
+  --color-saffron-tint: rgba(220, 38, 38, 0.14);
+  --color-on-primary: #ffffff;
+  --color-green: #3fae6b;
+  --color-green-deep: #7fae93;
+  --color-green-tint: rgba(63, 174, 107, 0.14);
+  --color-flag: #ef4444;
+  --color-flag-deep: #f87171;
+  --color-flag-tint: rgba(220, 38, 38, 0.12);
+  --color-amber: #d9913a;
+  --color-amber-tint: rgba(217, 145, 58, 0.14);
+}
+
+body {
+  background: var(--color-paper);
+  color: var(--color-ink);
+  font-family: var(--font-geist-sans), system-ui, sans-serif;
+  -webkit-font-smoothing: antialiased;
+}
+
+/* Page shell: parchment with a faint paper grain and a soft glow at the top. */
+.paper-grain {
+  background-color: var(--color-paper);
+  background-image:
+    radial-gradient(120% 90% at 50% 0%, rgba(255, 255, 255, 0.5), transparent 60%),
+    url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='140' height='140'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.8' numOctaves='2' stitchTiles='stitch'/%3E%3CfeColorMatrix type='saturate' values='0'/%3E%3C/filter%3E%3Crect width='140' height='140' filter='url(%23n)' opacity='0.03'/%3E%3C/svg%3E");
+}
+:root[data-theme="dark"] .paper-grain {
+  background-image:
+    radial-gradient(120% 90% at 50% 0%, rgba(255, 255, 255, 0.03), transparent 60%),
+    url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='140' height='140'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.8' numOctaves='2' stitchTiles='stitch'/%3E%3CfeColorMatrix type='saturate' values='0'/%3E%3C/filter%3E%3Crect width='140' height='140' filter='url(%23n)' opacity='0.025'/%3E%3C/svg%3E");
+}
+
+/* Keyboard focus: a 2 px saffron ring. */
+:focus-visible {
+  outline: 2px solid var(--color-saffron);
+  outline-offset: 2px;
+}
+
+/* Quiet, quick motion: colour changes ~150 ms, new content fades up. */
+a,
+button,
+input,
+textarea,
+select {
+  transition:
+    background-color 150ms,
+    border-color 150ms,
+    color 150ms,
+    text-decoration-color 150ms,
+    opacity 150ms;
+}
+
+@keyframes fade-up {
+  from {
+    opacity: 0;
+    transform: translateY(14px);
+  }
+  to {
+    opacity: 1;
+    transform: none;
+  }
+}
+.fade-up {
+  animation: fade-up 0.45s cubic-bezier(0.2, 0, 0, 1) both;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  *,
+  *::before,
+  *::after {
+    animation: none !important;
+    transition: none !important;
+  }
+}
+
+input::placeholder,
+textarea::placeholder {
+  color: var(--color-ink-faint);
 }

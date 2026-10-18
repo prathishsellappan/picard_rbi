@@ -1,5 +1,5 @@
 import { ActionForm } from "@/components/ActionForm";
-import { Card, PageTitle, buttonClass, inputClass } from "@/components/ui";
+import { buttonClass, Card, inputClass, linkClass, PageTitle } from "@/components/ui";
 import { requireOrganizer } from "@/lib/auth";
 import { getServerConfig } from "@/lib/config";
 import {
@@ -13,17 +13,17 @@ import { createParticipantAction, resetPasswordAction, updateParticipantAction }
 function ParticipantFields({ p }: { p?: OrganizerParticipantRow }) {
   return (
     <div className="grid gap-2 md:grid-cols-2">
-      <label className="text-xs">
+      <label className="text-[11.5px]">
         ID
         <input
           name="id"
           defaultValue={p?.id}
           readOnly={!!p}
-          className={`${inputClass} ${p ? "bg-slate-100" : ""}`}
+          className={`${inputClass} ${p ? "bg-paper-deep" : ""}`}
           placeholder="P16"
         />
       </label>
-      <label className="text-xs">
+      <label className="text-[11.5px]">
         Login username
         <input
           name="username"
@@ -33,11 +33,11 @@ function ParticipantFields({ p }: { p?: OrganizerParticipantRow }) {
           required
         />
       </label>
-      <label className="text-xs">
+      <label className="text-[11.5px]">
         Display name
         <input name="displayName" defaultValue={p?.display_name} className={inputClass} required />
       </label>
-      <label className="text-xs">
+      <label className="text-[11.5px]">
         Explorer label (public; leave empty to show the address only)
         <input
           name="explorerLabel"
@@ -46,7 +46,7 @@ function ParticipantFields({ p }: { p?: OrganizerParticipantRow }) {
           placeholder="e.g. Buyer 1"
         />
       </label>
-      <label className="text-xs">
+      <label className="text-[11.5px]">
         Role
         <select name="role" defaultValue={p?.role ?? "investor"} className={inputClass}>
           {PARTICIPANT_ROLES.map((r) => (
@@ -56,19 +56,19 @@ function ParticipantFields({ p }: { p?: OrganizerParticipantRow }) {
           ))}
         </select>
       </label>
-      <label className="text-xs">
+      <label className="text-[11.5px]">
         Assigned wallet
         <input name="walletAddress" defaultValue={p?.wallet_address} className={`${inputClass} font-mono`} required />
       </label>
-      <label className="text-xs md:col-span-2">
+      <label className="text-[11.5px] md:col-span-2">
         Instructions (shown only to this participant)
         <textarea name="instructions" defaultValue={p?.instructions} rows={2} className={inputClass} />
       </label>
-      <label className="text-xs md:col-span-2">
+      <label className="text-[11.5px] md:col-span-2">
         Organizer notes (never shown to participants)
         <textarea name="organizerNotes" defaultValue={p?.organizer_notes} rows={1} className={inputClass} />
       </label>
-      <label className="flex items-center gap-2 text-xs">
+      <label className="flex items-center gap-2 text-[11.5px]">
         <input type="checkbox" name="isMalicious" defaultChecked={p?.is_malicious} />
         Malicious creator (organizer only)
       </label>
@@ -96,7 +96,7 @@ export default async function OrganizerParticipantsPage() {
             actions={
               <ActionForm action={resetPasswordAction} className="text-right">
                 <input type="hidden" name="id" value={p.id} />
-                <button type="submit" className="text-xs text-slate-600 underline">
+                <button type="submit" className={`text-[11.5px] ${linkClass}`}>
                   Reset password
                 </button>
               </ActionForm>

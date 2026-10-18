@@ -1,7 +1,7 @@
 "use client";
 
 import { formatEther } from "ethers";
-import { Mono, StatusBadge } from "@/components/ui";
+import { linkClass, Mono, StatusBadge } from "@/components/ui";
 import { explorerTxUrl, getConfiguredChain } from "@/lib/chains";
 import { shortAddress } from "@/lib/address";
 import type { OwnTxRow } from "@/lib/tx-verify";
@@ -11,9 +11,9 @@ import { TX_LABELS } from "@/lib/tx-labels";
 // the chain by the server when it was last checked.
 export function MyTransactionsList({ rows }: { rows: OwnTxRow[] }) {
   const chain = getConfiguredChain();
-  if (rows.length === 0) return <p className="text-sm text-slate-500">No transactions yet.</p>;
+  if (rows.length === 0) return <p className="text-[13px] text-ink-muted">No transactions yet.</p>;
   return (
-    <ul className="divide-y divide-slate-100 text-sm">
+    <ul className="divide-y divide-line text-[13px]">
       {rows.map((row) => {
         const url = explorerTxUrl(chain, row.tx_hash);
         return (
@@ -25,7 +25,7 @@ export function MyTransactionsList({ rows }: { rows: OwnTxRow[] }) {
             </span>
             <span className="flex items-center gap-2">
               {url ? (
-                <a href={url} target="_blank" rel="noreferrer" className="underline">
+                <a href={url} target="_blank" rel="noreferrer" className={linkClass}>
                   <Mono>{shortAddress(row.tx_hash)}</Mono>
                 </a>
               ) : (

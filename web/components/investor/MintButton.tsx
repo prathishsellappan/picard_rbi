@@ -3,7 +3,7 @@
 import { Contract, formatEther } from "ethers";
 import { useRouter } from "next/navigation";
 import { useState } from "react";
-import { buttonClass } from "@/components/ui";
+import { buttonClass, secondaryButtonClass } from "@/components/ui";
 import { TxStatus } from "@/components/wallet/TxStatus";
 import { useTransaction } from "@/components/wallet/useTransaction";
 import { useWallet } from "@/components/wallet/WalletProvider";
@@ -37,7 +37,7 @@ export function MintButton({
   return (
     <div>
       {confirming ? (
-        <div className="space-y-2 text-sm">
+        <div className="space-y-2 text-[13px]">
           <p>
             Mint 1 <strong>{projectName}</strong> NFT for {formatEther(price)} test ETH (plus gas)?
           </p>
@@ -45,7 +45,7 @@ export function MintButton({
             <button type="button" onClick={onMint} className={buttonClass}>
               Confirm in MetaMask
             </button>
-            <button type="button" onClick={() => setConfirming(false)} className="rounded px-3 py-2 hover:bg-slate-100">
+            <button type="button" onClick={() => setConfirming(false)} className={secondaryButtonClass}>
               Cancel
             </button>
           </div>

@@ -1,4 +1,5 @@
 import { formatEther } from "ethers";
+import { linkClass } from "@/components/ui";
 import { explorerAddressUrl, getConfiguredChain } from "@/lib/chains";
 import type { ProjectInfo } from "@/lib/contracts";
 import { Mono } from "./ui";
@@ -7,7 +8,7 @@ import { Mono } from "./ui";
 export function ProjectFacts({ project, showFunds }: { project: ProjectInfo; showFunds: boolean }) {
   const url = explorerAddressUrl(getConfiguredChain(), project.address);
   return (
-    <dl className="space-y-1 text-sm">
+    <dl className="space-y-1 text-[13px]">
       <Row label="Mint price">{formatEther(project.mintPriceWei)} ETH</Row>
       <Row label="NFTs minted">{project.mintedCount}</Row>
       {showFunds && (
@@ -18,10 +19,10 @@ export function ProjectFacts({ project, showFunds }: { project: ProjectInfo; sho
         </>
       )}
       <div className="pt-1">
-        <dt className="text-slate-500">Contract</dt>
+        <dt className="text-ink-muted">Contract</dt>
         <dd>
           {url ? (
-            <a href={url} target="_blank" rel="noreferrer" className="underline">
+            <a href={url} target="_blank" rel="noreferrer" className={linkClass}>
               <Mono>{project.address}</Mono>
             </a>
           ) : (
@@ -36,7 +37,7 @@ export function ProjectFacts({ project, showFunds }: { project: ProjectInfo; sho
 function Row({ label, children }: { label: string; children: React.ReactNode }) {
   return (
     <div className="flex justify-between gap-2">
-      <dt className="text-slate-500">{label}</dt>
+      <dt className="text-ink-muted">{label}</dt>
       <dd>{children}</dd>
     </div>
   );

@@ -21,7 +21,7 @@ export function ActionForm({
         {children}
       </fieldset>
       {result && (
-        <p role="status" className={`mt-2 text-sm ${result.ok ? "text-emerald-700" : "text-red-700"}`}>
+        <p role="status" className={`mt-2 text-[13px] ${result.ok ? "text-green-deep" : "text-flag-deep"}`}>
           {result.message}
         </p>
       )}

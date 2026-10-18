@@ -3,7 +3,7 @@
 import { Contract, formatEther } from "ethers";
 import { useRouter } from "next/navigation";
 import { useState } from "react";
-import { buttonClass, inputClass } from "@/components/ui";
+import { buttonClass, inputClass, secondaryButtonClass } from "@/components/ui";
 import { TxStatus } from "@/components/wallet/TxStatus";
 import { useTransaction } from "@/components/wallet/useTransaction";
 import { useWallet } from "@/components/wallet/WalletProvider";
@@ -55,7 +55,7 @@ export function CreateProjectForm({ factory, minPriceWei, maxPriceWei, allowed }
 
   if (!allowed) {
     return (
-      <p className="text-sm text-slate-600">
+      <p className="text-[13px] text-ink-soft">
         Your wallet isn&apos;t approved on the project factory yet. The organizer will enable project creation.
       </p>
     );
@@ -82,7 +82,7 @@ export function CreateProjectForm({ factory, minPriceWei, maxPriceWei, allowed }
             rows={3}
             maxLength={1000}
           />
-          <label className="block text-xs text-slate-600">
+          <label className="block text-[11.5px] text-ink-soft">
             Mint price in ETH ({formatEther(min)}–{formatEther(max)})
             <input
               value={price}
@@ -92,33 +92,29 @@ export function CreateProjectForm({ factory, minPriceWei, maxPriceWei, allowed }
               inputMode="decimal"
             />
           </label>
-          {error && <p className="text-sm text-red-700">{error}</p>}
+          {error && <p className="text-[13px] text-amber">{error}</p>}
           <button type="submit" disabled={!ready || tx.busy} className={buttonClass}>
             Review project
           </button>
-          {!ready && <p className="text-xs text-slate-500">Connect your assigned wallet first.</p>}
+          {!ready && <p className="text-[11.5px] text-ink-muted">Connect your assigned wallet first.</p>}
         </form>
       ) : (
-        <div className="space-y-2 text-sm">
+        <div className="space-y-2 text-[13px]">
           <p className="font-medium">This deploys your project contract. It can&apos;t be changed later:</p>
           <p>
-            <span className="text-slate-500">Name: </span>
+            <span className="text-ink-muted">Name: </span>
             {review.name}
           </p>
           <p>
-            <span className="text-slate-500">Mint price: </span>
+            <span className="text-ink-muted">Mint price: </span>
             {formatEther(review.price)} test ETH
           </p>
-          {review.description && <p className="text-slate-600">{review.description}</p>}
+          {review.description && <p className="text-ink-soft">{review.description}</p>}
           <div className="flex gap-2 pt-1">
             <button type="button" onClick={onConfirm} className={buttonClass}>
               Deploy with MetaMask
             </button>
-            <button
-              type="button"
-              onClick={() => setReview(null)}
-              className="rounded px-4 py-2 text-sm hover:bg-slate-100"
-            >
+            <button type="button" onClick={() => setReview(null)} className={secondaryButtonClass}>
               Back
             </button>
           </div>

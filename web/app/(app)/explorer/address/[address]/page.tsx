@@ -33,8 +33,8 @@ export default async function AddressPage({ params }: { params: Promise<{ addres
       <PageTitle title={label ?? "Address"} subtitle={label ? undefined : "Not a known scenario address"} />
       <Card title="Overview">
         <Mono>{address}</Mono>
-        <p className="mt-2 text-sm">
-          <span className="text-slate-500">Current balance (live): </span>
+        <p className="mt-2 text-[13px]">
+          <span className="text-ink-muted">Current balance (live): </span>
           {balance !== null ? `${formatEther(balance)} ETH` : "unavailable"}
         </p>
         <div className="mt-2">
@@ -58,20 +58,20 @@ export default async function AddressPage({ params }: { params: Promise<{ addres
           </Card>
         )}
         <Card title={`Internal ETH movements (${history.internal.length})`}>
-          <p className="mb-2 text-xs text-slate-500">
+          <p className="mb-2 text-[11.5px] text-ink-muted">
             ETH moved by contracts inside other transactions. These don&apos;t appear as transactions; they are
             reconstructed from the contracts&apos; FundsReceived and Withdrawn events.
           </p>
           {history.internal.length === 0 ? (
-            <p className="text-sm text-slate-500">None.</p>
+            <p className="text-[13px] text-ink-muted">None.</p>
           ) : (
-            <ul className="divide-y divide-slate-100 text-sm">
+            <ul className="divide-y divide-line text-[13px]">
               {history.internal.map((t) => (
                 <li key={`${t.txHash}-${t.from}-${t.to}`} className="flex flex-wrap items-center gap-x-2 py-2">
-                  <span className="text-slate-500">#{t.blockNumber}</span>
+                  <span className="text-ink-muted">#{t.blockNumber}</span>
                   <AddressLink address={t.from} labels={labels} /> → <AddressLink address={t.to} labels={labels} />
                   <span>{formatEther(t.valueWei)} ETH</span>
-                  <span className="text-slate-500">({t.reason})</span>
+                  <span className="text-ink-muted">({t.reason})</span>
                   <TxLink hash={t.txHash} />
                 </li>
               ))}
@@ -80,14 +80,14 @@ export default async function AddressPage({ params }: { params: Promise<{ addres
         </Card>
         <Card title={`NFT transfers (${history.nftTransfers.length})`}>
           {history.nftTransfers.length === 0 ? (
-            <p className="text-sm text-slate-500">None.</p>
+            <p className="text-[13px] text-ink-muted">None.</p>
           ) : (
-            <ul className="divide-y divide-slate-100 text-sm">
+            <ul className="divide-y divide-line text-[13px]">
               {history.nftTransfers.map((t) => (
                 <li key={`${t.txHash}-${t.tokenId}`} className="flex flex-wrap items-center gap-x-2 py-2">
                   <span>Token #{t.tokenId}</span>
                   {t.from === "0x0000000000000000000000000000000000000000" ? (
-                    <span className="text-slate-500">minted to</span>
+                    <span className="text-ink-muted">minted to</span>
                   ) : (
                     <>
                       <AddressLink address={t.from} labels={labels} /> →
@@ -102,11 +102,11 @@ export default async function AddressPage({ params }: { params: Promise<{ addres
         </Card>
         {history.emittedEvents.length > 0 && (
           <Card title={`Events emitted by this contract (${history.emittedEvents.length})`}>
-            <ul className="divide-y divide-slate-100 text-sm">
+            <ul className="divide-y divide-line text-[13px]">
               {history.emittedEvents.map((e, i) => (
                 <li key={`${e.txHash}-${i}`} className="py-2">
                   <span className="font-medium">{e.eventName}</span> <TxLink hash={e.txHash} />
-                  <span className="ml-2 break-all font-mono text-xs text-slate-600">{JSON.stringify(e.args)}</span>
+                  <span className="ml-2 break-all font-mono text-[11.5px] text-ink-soft">{JSON.stringify(e.args)}</span>
                 </li>
               ))}
             </ul>

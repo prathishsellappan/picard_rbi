@@ -14,29 +14,29 @@ export function WalletPanel() {
 
   const tone =
     wallet.status === "ready"
-      ? "text-emerald-700"
+      ? "text-green-deep"
       : wallet.status === "wrong-account" || wallet.status === "wrong-network"
-        ? "text-red-700"
-        : "text-slate-600";
+        ? "text-amber"
+        : "text-ink-soft";
 
   return (
     <Card title="Your wallet">
-      <p className="text-sm text-slate-500">Assigned wallet</p>
+      <p className="text-[13px] text-ink-muted">Assigned wallet</p>
       <Mono>{wallet.assignedWallet}</Mono>
 
       {wallet.connectedAddress && wallet.status === "wrong-account" && (
         <>
-          <p className="mt-2 text-sm text-slate-500">Connected in MetaMask</p>
+          <p className="mt-2 text-[13px] text-ink-muted">Connected in MetaMask</p>
           <Mono>{wallet.connectedAddress}</Mono>
         </>
       )}
 
-      <p role="status" className={`mt-3 text-sm font-medium ${tone}`}>
+      <p role="status" className={`mt-3 text-[13px] font-medium ${tone}`}>
         {wallet.checked ? statusMessage(wallet.status, chain.name) : "Checking MetaMask…"}
       </p>
-      {wallet.error && <p className="mt-1 text-sm text-red-700">{wallet.error}</p>}
+      {wallet.error && <p className="mt-1 text-[13px] text-amber">{wallet.error}</p>}
       {wallet.status === "wrong-account" && (
-        <ol className="mt-2 list-decimal space-y-1 pl-5 text-sm text-slate-700">
+        <ol className="mt-2 list-decimal space-y-1 pl-5 text-[13px] text-ink-soft">
           <li>
             Click <strong>Choose account in MetaMask</strong>.
           </li>
@@ -50,7 +50,7 @@ export function WalletPanel() {
       )}
       {wallet.status === "wrong-network" && <NetworkHelp currentChainId={wallet.chainId} />}
       {wallet.status === "ready" && balance !== null && (
-        <p className="mt-1 text-sm text-slate-600">Balance: {formatEther(balance)} test ETH</p>
+        <p className="mt-1 text-[13px] text-ink-soft">Balance: {formatEther(balance)} test ETH</p>
       )}
 
       <div className="mt-3 flex gap-2">
@@ -107,7 +107,7 @@ export function useBalance(address: string | null): bigint | null {
 function NetworkHelp({ currentChainId }: { currentChainId: number | null }) {
   const chain = getConfiguredChain();
   return (
-    <div className="mt-3 rounded border border-slate-200 bg-slate-50 p-3 text-sm text-slate-700">
+    <div className="mt-3 rounded-[9px] border border-line-strong bg-paper-deep/60 p-3 text-[13px] text-ink-soft">
       <p>
         MetaMask is on chain ID <strong>{currentChainId ?? "unknown"}</strong>; this role-play uses{" "}
         <strong>{chain.id}</strong>. Click <strong>Switch to {chain.name}</strong>. If that doesn&apos;t work:
@@ -119,13 +119,13 @@ function NetworkHelp({ currentChainId }: { currentChainId: number | null }) {
             network → Add a network manually) and enter:
           </p>
           <dl className="mt-2 grid grid-cols-[9rem_1fr] gap-x-3 gap-y-1">
-            <dt className="text-slate-500">Network name</dt>
+            <dt className="text-ink-muted">Network name</dt>
             <dd>{chain.name}</dd>
-            <dt className="text-slate-500">RPC URL</dt>
+            <dt className="text-ink-muted">RPC URL</dt>
             <dd className="font-mono">{chain.walletRpcUrl}</dd>
-            <dt className="text-slate-500">Chain ID</dt>
+            <dt className="text-ink-muted">Chain ID</dt>
             <dd className="font-mono">{chain.id}</dd>
-            <dt className="text-slate-500">Currency symbol</dt>
+            <dt className="text-ink-muted">Currency symbol</dt>
             <dd>ETH</dd>
           </dl>
           <p className="mt-2">

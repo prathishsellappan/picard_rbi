@@ -35,15 +35,15 @@ export default async function MulePage() {
 
         <Card title="Incoming transfers">
           {incoming.length === 0 ? (
-            <p className="text-sm text-slate-500">No incoming transfers indexed yet.</p>
+            <p className="text-[13px] text-ink-muted">No incoming transfers indexed yet.</p>
           ) : (
-            <ul className="divide-y divide-slate-100 text-sm">
+            <ul className="divide-y divide-line text-[13px]">
               {incoming.map((t) => (
                 <li key={t.hash} className="flex flex-wrap items-center justify-between gap-2 py-2">
                   <span>
                     {formatEth(t.valueWei)} ETH from <AddressLink address={t.from} labels={labels} />
                   </span>
-                  <span className="flex items-center gap-2 text-xs text-slate-500">
+                  <span className="flex items-center gap-2 text-[11.5px] text-ink-muted">
                     block {t.blockNumber} <TxLink hash={t.hash} />
                   </span>
                 </li>
@@ -64,7 +64,7 @@ export default async function MulePage() {
           />
         ) : (
           <Card title="Final transfer">
-            <p className="text-sm text-red-700">The destination wallet is not configured yet. Ask the organizer.</p>
+            <p className="text-[13px] text-amber">The destination wallet is not configured yet. Ask the organizer.</p>
           </Card>
         )}
       </div>

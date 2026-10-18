@@ -52,9 +52,9 @@ export default async function CreatorPage() {
           <ContractsNotReady message={chain.message} />
         ) : chain.project ? (
           <Card title={`My project: ${chain.project.name}`}>
-            {chain.project.description && <p className="mb-3 text-sm text-slate-600">{chain.project.description}</p>}
+            {chain.project.description && <p className="mb-3 text-[13px] text-ink-soft">{chain.project.description}</p>}
             <ProjectFacts project={chain.project} showFunds />
-            <h3 className="mb-2 mt-4 text-sm font-semibold">Withdraw funds</h3>
+            <h3 className="mb-2 mt-4 text-[13px] font-semibold">Withdraw funds</h3>
             <WithdrawForm project={chain.project.address} availableWei={chain.project.availableWei} />
           </Card>
         ) : (

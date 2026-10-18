@@ -2,6 +2,7 @@ import { describe, expect, it } from "vitest";
 import { normalizeAddress, sameAddress } from "@/lib/address";
 import { getSupportedChain, parseChainId } from "@/lib/chains";
 import { parseEthAmount } from "@/lib/eth";
+import { formatIST } from "@/lib/time";
 import { generateCardPassword, hashPassword, verifyPassword } from "@/lib/password";
 import { homePathFor, isAllowed, type SessionUser } from "@/lib/roles";
 import { briefingFor, economicsFor, profileFor } from "@/scripts/lib/scenario-setup";
@@ -126,5 +127,14 @@ describe("Frosties scenario defaults", () => {
     ] as const) {
       expect(briefingFor(id, role, ctx)).not.toContain("0xSECOND");
     }
+  });
+});
+
+describe("IST times", () => {
+  it("shows UTC timestamps in Indian Standard Time (UTC+5:30)", () => {
+    expect(formatIST("2026-10-18T06:15:44.000Z")).toBe("18 Oct 2026, 11:45:44 IST");
+    expect(formatIST("2022-01-09T22:45:42Z")).toBe("10 Jan 2022, 04:15:42 IST"); // crosses midnight
+    expect(formatIST(null)).toBe("—");
+    expect(formatIST("not a date")).toBe("—");
   });
 });

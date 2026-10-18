@@ -48,12 +48,12 @@ export default async function ExplorerPage({ searchParams }: { searchParams: Pro
           Search
         </button>
       </form>
-      {searchError && <p className="mb-2 text-sm text-red-700">{searchError}</p>}
+      {searchError && <p className="mb-2 text-[13px] text-amber">{searchError}</p>}
       <IndexerStatusLine status={status} />
 
       <div className="mt-6 grid gap-4">
         <Card title="Scenario addresses">
-          <ul className="grid gap-1 text-sm sm:grid-cols-2 lg:grid-cols-3">
+          <ul className="grid gap-1 text-[13px] sm:grid-cols-2 lg:grid-cols-3">
             {directory.map(([address]) => (
               <li key={address}>
                 <AddressLink address={address} labels={labels} />

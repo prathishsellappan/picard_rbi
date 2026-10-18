@@ -3,7 +3,7 @@
 import { Contract, formatEther } from "ethers";
 import { useRouter } from "next/navigation";
 import { useState } from "react";
-import { buttonClass, inputClass } from "@/components/ui";
+import { buttonClass, inputClass, linkClass } from "@/components/ui";
 import { TxStatus } from "@/components/wallet/TxStatus";
 import { useTransaction } from "@/components/wallet/useTransaction";
 import { useWallet } from "@/components/wallet/WalletProvider";
@@ -41,15 +41,19 @@ export function WithdrawForm({ project, availableWei }: { project: string; avail
             aria-label="Withdraw amount in ETH"
             inputMode="decimal"
           />
-          <button type="button" onClick={() => setAmount(formatEther(available))} className="text-sm underline">
+          <button
+            type="button"
+            onClick={() => setAmount(formatEther(available))}
+            className={`text-[12px] ${linkClass}`}
+          >
             Max
           </button>
         </div>
-        {error && <p className="text-sm text-red-700">{error}</p>}
+        {error && <p className="text-[13px] text-amber">{error}</p>}
         <button type="submit" disabled={!ready || tx.busy || available === 0n} className={buttonClass}>
           Withdraw to my wallet
         </button>
-        {available === 0n && <p className="text-xs text-slate-500">No funds available to withdraw.</p>}
+        {available === 0n && <p className="text-[11.5px] text-ink-muted">No funds available to withdraw.</p>}
       </form>
       <TxStatus state={tx.state} onRecheck={tx.recheck} />
     </div>
