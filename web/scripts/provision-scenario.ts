@@ -1,7 +1,7 @@
 // Provisions a NEW scenario with freshly generated wallets (decision D8: the organizer creates
 // the wallets and logins). Works for the local chain and Sepolia.
 //
-//   npm run provision -- --name "Sepolia live run" [--exchange1 0x...] [--malicious P03]
+//   npm run provision -- --name "Frosties – Sepolia" [--exchange1 0x...] [--malicious P01]
 //                        [--replace] [--secrets-dir <dir>]
 //
 // - Generates 15 participant wallets and Exchange 2 (and Exchange 1 unless --exchange1 gives an
@@ -16,7 +16,13 @@ import { mkdir, writeFile } from "node:fs/promises";
 import path from "node:path";
 import { Wallet, getAddress, isAddress } from "ethers";
 import pg from "pg";
-import { ensureOrganizer, insertScenario, participantId, roleForIndex } from "./lib/scenario-setup.ts";
+import {
+  FROSTIES_CREATOR,
+  ensureOrganizer,
+  insertScenario,
+  participantId,
+  roleForIndex,
+} from "./lib/scenario-setup.ts";
 
 function arg(name: string): string | null {
   const i = process.argv.indexOf(`--${name}`);
@@ -44,7 +50,7 @@ if (exchange1Arg && !isAddress(exchange1Arg)) {
   console.error("--exchange1 must be a valid address.");
   process.exit(1);
 }
-const malicious = arg("malicious");
+const malicious = arg("malicious") ?? FROSTIES_CREATOR; // P01 runs Frosties by default
 if (malicious && !/^P0[1-5]$/.test(malicious)) {
   console.error("--malicious must be one of the creators P01–P05.");
   process.exit(1);

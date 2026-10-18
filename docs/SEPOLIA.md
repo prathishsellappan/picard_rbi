@@ -31,13 +31,15 @@ Gas use was measured in the Stage 7 end-to-end run (see `contracts/scripts/lib/g
 | Withdraw | ~60,000 |
 | ETH transfer | 21,000 |
 
-With the default funding plan (creator 0.05, investor 0.02 + 0.03, mule 0.01):
+Frosties prices on Sepolia are 10× below the real case: the mint is 0.004 ETH, and the price
+bounds are 0.001–0.005 ETH. The default Sepolia funding plan is: creator 0.05, buyer 0.02 + 0.01,
+second wallet 0.01.
 
 | Wallet | Needs | At 5 gwei | At 20 gwei |
 |---|---|---|---|
 | Deployer | ~5.95M gas | 0.03 ETH | 0.12 ETH |
-| Exchange 1 | 0.71 ETH funding + 15 transfers | 0.71 ETH | 0.72 ETH |
-| **Total to collect** | | **~0.75 ETH** | **~0.85 ETH** |
+| Exchange 1 | 0.53 ETH funding + 15 transfers | 0.53 ETH | 0.54 ETH |
+| **Total to collect** | | **~0.57 ETH** | **~0.66 ETH** |
 
 Faucets typically give 0.05–0.5 ETH per day, so start collecting early. To need less, lower the
 amounts on the organizer **Scenario** page *before deploying*. The factory copies the mint price
@@ -105,12 +107,12 @@ Sepolia history can't be erased, and a new scenario keeps runs from mixing.
 
 1. **Provision wallets and logins.** Use your funded Exchange 1 address:
    ```bash
-   npm run provision -- --name "Sepolia rehearsal 1" --exchange1 0xYourExchange1 --malicious P03
+   npm run provision -- --name "Frosties – Sepolia rehearsal 1" --exchange1 0xYourExchange1
    ```
    Add `--replace` from the second scenario on. The previous scenario is deactivated, not deleted.
    Keys and login cards are written to `organizer-secrets/scenario-<id>-chain-11155111-*`.
-   Logins are role-based (`creator1`…, `investor1`…, `mule`), and the explorer labels stay
-   `P01`…`P15`.
+   Logins and explorer labels follow the Frosties case (`frosties`, `creator1`–`creator4`,
+   `buyer1`–`buyer9`, `mule`). P01 runs Frosties by default.
 2. **Configure (you).** Log in to the hosted app as `organizer`.
    - Write each participant's instructions on **Participants**.
    - Check the mint bounds and funding on **Scenario**. Both must be final before step 4.

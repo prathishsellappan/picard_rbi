@@ -4,6 +4,7 @@ import { getSupportedChain, parseChainId } from "@/lib/chains";
 import { parseEthAmount } from "@/lib/eth";
 import { generateCardPassword, hashPassword, verifyPassword } from "@/lib/password";
 import { homePathFor, isAllowed, type SessionUser } from "@/lib/roles";
+import { briefingFor, economicsFor, profileFor } from "@/scripts/lib/scenario-setup";
 
 describe("chain allowlist", () => {
   it("accepts local and Sepolia", () => {
@@ -93,5 +94,37 @@ describe("role rules", () => {
   it("sends each role to its own dashboard", () => {
     expect(homePathFor(investor)).toBe("/investor");
     expect(homePathFor(organizer)).toBe("/organizer");
+  });
+});
+
+describe("Frosties scenario defaults", () => {
+  it("names the 15 participants after the case", () => {
+    expect(profileFor(1)).toEqual({
+      username: "frosties",
+      displayName: "Frosties creator",
+      explorerLabel: "Contract creator",
+    });
+    expect(profileFor(2).username).toBe("creator1");
+    expect(profileFor(6)).toEqual({ username: "buyer1", displayName: "Buyer 1", explorerLabel: "Buyer 1" });
+    expect(profileFor(14).username).toBe("buyer9");
+    expect(profileFor(15)).toEqual({ username: "mule", displayName: "Second wallet", explorerLabel: "" });
+  });
+
+  it("uses the real 0.04 ETH price locally and a 10x smaller one on Sepolia", () => {
+    expect(economicsFor(31337).frostiesPrice).toBe("0.04");
+    expect(economicsFor(11155111).frostiesPrice).toBe("0.004");
+    expect(Number(economicsFor(11155111).maxMintPrice)).toBeGreaterThanOrEqual(0.004);
+  });
+
+  it("puts the plan and the second wallet's address only in the Frosties creator's briefing", () => {
+    const ctx = { frostiesPrice: "0.04", secondWallet: "0xSECOND", mixerLabel: "Tornado Cash (mixer stand-in)" };
+    expect(briefingFor("P01", "creator", ctx)).toContain("0xSECOND");
+    for (const [id, role] of [
+      ["P02", "creator"],
+      ["P06", "investor"],
+      ["P15", "mule"],
+    ] as const) {
+      expect(briefingFor(id, role, ctx)).not.toContain("0xSECOND");
+    }
   });
 });

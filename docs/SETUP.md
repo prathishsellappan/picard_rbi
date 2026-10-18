@@ -81,7 +81,7 @@ expected on-chain records but don't change what participants can afford.
 rehearsal with fresh zero-balance wallets, the organizer provisions a scenario:
 
 ```bash
-npm run provision -- --name "Sepolia rehearsal 1" --exchange1 0xYourFundedExchange1 --malicious P03
+npm run provision -- --name "Frosties – Sepolia rehearsal 1" --exchange1 0xYourFundedExchange1
 ```
 
 - Generates 15 participant wallets and Exchange 2. Exchange 1 is generated too unless `--exchange1`

@@ -38,6 +38,15 @@ function ParticipantFields({ p }: { p?: OrganizerParticipantRow }) {
         <input name="displayName" defaultValue={p?.display_name} className={inputClass} required />
       </label>
       <label className="text-xs">
+        Explorer label (public; leave empty to show the address only)
+        <input
+          name="explorerLabel"
+          defaultValue={p?.explorer_label}
+          className={inputClass}
+          placeholder="e.g. Buyer 1"
+        />
+      </label>
+      <label className="text-xs">
         Role
         <select name="role" defaultValue={p?.role ?? "investor"} className={inputClass}>
           {PARTICIPANT_ROLES.map((r) => (

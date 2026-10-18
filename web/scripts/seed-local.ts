@@ -13,11 +13,17 @@ import { mkdir, writeFile } from "node:fs/promises";
 import path from "node:path";
 import { HDNodeWallet, Mnemonic } from "ethers";
 import pg from "pg";
-import { ensureOrganizer, insertScenario, participantId, roleForIndex } from "./lib/scenario-setup.ts";
+import {
+  FROSTIES_CREATOR,
+  ensureOrganizer,
+  insertScenario,
+  participantId,
+  roleForIndex,
+} from "./lib/scenario-setup.ts";
 
 const HARDHAT_MNEMONIC = "test test test test test test test test test test test junk";
 const LOCAL_CHAIN_ID = 31337;
-const MALICIOUS_CREATOR = "P03"; // organizer-only knowledge; change freely for rehearsals
+const MALICIOUS_CREATOR = FROSTIES_CREATOR; // P01 runs Frosties; organizer-only knowledge
 
 if (process.env.NEXT_PUBLIC_CHAIN_ID !== String(LOCAL_CHAIN_ID)) {
   console.error(`seed-local only runs with NEXT_PUBLIC_CHAIN_ID=${LOCAL_CHAIN_ID}.`);
@@ -59,7 +65,7 @@ try {
     address: hardhatAddress(k + 1),
   }));
   const { scenarioId, passwords, usernames } = await insertScenario(client, {
-    name: "Local rehearsal",
+    name: "Frosties (local)",
     chainId: LOCAL_CHAIN_ID,
     exchange1: hardhatAddress(0),
     exchange2: hardhatAddress(16),

@@ -8,6 +8,7 @@ export type PublicScenario = {
   name: string;
   chainId: number;
   exchange2Address: string | null;
+  exchange2Label: string; // public explorer label, e.g. "Tornado Cash (mixer stand-in)"
   minMintPriceWei: string;
   maxMintPriceWei: string;
 };
@@ -18,11 +19,14 @@ export async function getActiveScenario(): Promise<PublicScenario | null> {
     name: string;
     chain_id: number;
     exchange2_address: string | null;
+    exchange2_label: string;
     min_mint_price_wei: string;
     max_mint_price_wei: string;
   }>(
-    `SELECT id, name, chain_id, exchange2_address, min_mint_price_wei, max_mint_price_wei
-       FROM scenarios WHERE is_active AND chain_id = $1`,
+    `SELECT id, name, chain_id, exchange2_address, min_mint_price_wei, max_mint_price_wei,
+            coalesce(nullif((SELECT public_label FROM known_addresses k WHERE k.scenario_id = s.id
+                               AND lower(k.address) = lower(s.exchange2_address)), ''), 'Exchange 2') AS exchange2_label
+       FROM scenarios s WHERE is_active AND chain_id = $1`,
     [getServerConfig().chain.id],
   );
   if (!row) return null;
@@ -31,6 +35,7 @@ export async function getActiveScenario(): Promise<PublicScenario | null> {
     name: row.name,
     chainId: row.chain_id,
     exchange2Address: row.exchange2_address,
+    exchange2Label: row.exchange2_label,
     minMintPriceWei: row.min_mint_price_wei,
     maxMintPriceWei: row.max_mint_price_wei,
   };

@@ -16,41 +16,95 @@ export function participantId(i: number): string {
   return `P${String(i).padStart(2, "0")}`;
 }
 
-// Role-based login usernames: creator1…, investor1…, and "mule" when there is a single mule.
-export function usernamesFor(participants: { id: string; role: Role }[]): Map<string, string> {
-  const counts = new Map<Role, number>();
-  for (const p of participants) counts.set(p.role, (counts.get(p.role) ?? 0) + 1);
-  const seen = new Map<Role, number>();
-  const names = new Map<string, string>();
-  for (const p of participants) {
-    const n = (seen.get(p.role) ?? 0) + 1;
-    seen.set(p.role, n);
-    names.set(p.id, p.role === "mule" && counts.get("mule") === 1 ? "mule" : `${p.role}${n}`);
+// ── Frosties role-play defaults ─────────────────────────────────────────────────────────────
+// The role-play re-enacts the Frosties NFT case (see docs/ORGANIZER-GUIDE.md). P01 runs the
+// Frosties project; P02–P05 run ordinary projects; P06–P14 are buyers; P15 is the second wallet.
+// Explorer labels follow the PICARD lab's names. The second wallet has no label, as in the lab,
+// where investigators find it by following the money.
+
+export type Profile = { username: string; displayName: string; explorerLabel: string };
+
+export function profileFor(index: number): Profile {
+  if (index === 1) return { username: "frosties", displayName: "Frosties creator", explorerLabel: "Contract creator" };
+  if (index <= 5) {
+    const n = index - 1;
+    return { username: `creator${n}`, displayName: `Creator ${n}`, explorerLabel: `Creator ${n}` };
   }
-  return names;
+  if (index <= 14) {
+    const n = index - 5;
+    return { username: `buyer${n}`, displayName: `Buyer ${n}`, explorerLabel: `Buyer ${n}` };
+  }
+  return { username: "mule", displayName: "Second wallet", explorerLabel: "" };
 }
 
-// "creator1" → "Creator 1", "mule" → "Mule".
-export function displayNameFor(username: string): string {
-  const [, word, num] = /^([a-z]+)(\d*)$/.exec(username) ?? [, username, ""];
-  return `${word[0].toUpperCase()}${word.slice(1)}${num ? ` ${num}` : ""}`;
+export const FROSTIES_CREATOR = "P01";
+export const EXCHANGE1_LABEL = "Exchange (service wallet)";
+export const EXCHANGE2_LABEL = "Tornado Cash (mixer stand-in)";
+
+// The real sale was 0.04 ETH per token. Sepolia test ETH is scarce, so prices there are 10× smaller.
+type ChainEconomics = {
+  frostiesPrice: string;
+  minMintPrice: string;
+  maxMintPrice: string;
+  funding: Record<Role, { gas: string; scenario: string }>;
+};
+
+export function economicsFor(chainId: number): ChainEconomics {
+  if (chainId === 11155111) {
+    return {
+      frostiesPrice: "0.004",
+      minMintPrice: "0.001",
+      maxMintPrice: "0.005",
+      funding: {
+        creator: { gas: "0.05", scenario: "0" },
+        investor: { gas: "0.02", scenario: "0.01" },
+        mule: { gas: "0.01", scenario: "0" },
+      },
+    };
+  }
+  return {
+    frostiesPrice: "0.04",
+    minMintPrice: "0.01",
+    maxMintPrice: "0.05",
+    funding: {
+      creator: { gas: "0.05", scenario: "0" },
+      investor: { gas: "0.02", scenario: "0.1" },
+      mule: { gas: "0.01", scenario: "0" },
+    },
+  };
 }
 
-export const DEFAULT_INSTRUCTIONS: Record<Role, string> = {
-  creator: "Create your project, set a mint price, and follow the organizer's briefing for your project.",
-  investor: "Browse the marketplace and mint NFTs from the projects named in your briefing.",
-  mule: "Watch your wallet for incoming test ETH and forward it to Exchange 2 when instructed.",
-};
-
-// Initial funding per wallet: gas money is kept separate from scenario funds.
-export const DEFAULT_FUNDING: Record<Role, { gas: string; scenario: string }> = {
-  creator: { gas: "0.05", scenario: "0" },
-  investor: { gas: "0.02", scenario: "0.03" },
-  mule: { gas: "0.01", scenario: "0" },
-};
+// Default private briefings. Only the Frosties creator's briefing mentions the plan; it needs the
+// second wallet's address.
+export function briefingFor(
+  id: string,
+  role: Role,
+  ctx: { frostiesPrice: string; secondWallet: string; mixerLabel: string },
+): string {
+  if (id === FROSTIES_CREATOR) {
+    return [
+      `You run Frosties, a "utility NFT" collection. Holders are promised giveaways, early access to a`,
+      `metaverse game and mint passes to later "seasons".`,
+      ``,
+      `1. Create your project: name "Frosties", mint price ${ctx.frostiesPrice} ETH, and a description that`,
+      `   sells those promises.`,
+      `2. When the buyers have minted, withdraw everything (Withdraw funds → Max).`,
+      `3. Straight away, send the whole amount with Send test ETH to this wallet:`,
+      `   ${ctx.secondWallet}`,
+      `Don't tell the other participants.`,
+    ].join("\n");
+  }
+  if (role === "creator") {
+    return "Create your own NFT project with a name, a description and a mint price within the allowed range. Run it honestly and follow the organizer's briefing.";
+  }
+  if (role === "investor") {
+    return `Browse the marketplace. Mint one NFT from Frosties (${ctx.frostiesPrice} ETH) and one from any other project you like.`;
+  }
+  return `When test ETH arrives in your wallet, forward it with "Transfer to ${ctx.mixerLabel}" in a few round amounts (for example several equal parts). Keep a little for gas.`;
+}
 
 export type ScenarioInput = {
-  name: string;
+  name: string; // e.g. "Frosties"
   chainId: number;
   exchange1: string;
   exchange2: string;
@@ -58,48 +112,65 @@ export type ScenarioInput = {
   maliciousCreator: string | null;
 };
 
+// participants must be ordered P01…P15 (index = position + 1).
+
 // Inserts an active scenario with its participants and returns the generated login passwords.
 // Caller owns the transaction.
 export async function insertScenario(
   client: pg.Client,
   input: ScenarioInput,
 ): Promise<{ scenarioId: number; passwords: Map<string, string>; usernames: Map<string, string> }> {
+  const econ = economicsFor(input.chainId);
   const scenario = await client.query<{ id: number }>(
-    `INSERT INTO scenarios (name, chain_id, is_active, exchange1_address, exchange2_address)
-     VALUES ($1, $2, TRUE, $3, $4) RETURNING id`,
-    [input.name, input.chainId, input.exchange1, input.exchange2],
+    `INSERT INTO scenarios (name, chain_id, is_active, exchange1_address, exchange2_address,
+                            min_mint_price_wei, max_mint_price_wei)
+     VALUES ($1, $2, TRUE, $3, $4, $5, $6) RETURNING id`,
+    [
+      input.name,
+      input.chainId,
+      input.exchange1,
+      input.exchange2,
+      parseEther(econ.minMintPrice).toString(),
+      parseEther(econ.maxMintPrice).toString(),
+    ],
   );
   const scenarioId = scenario.rows[0].id;
   const passwords = new Map<string, string>();
-  const usernames = usernamesFor(input.participants);
+  const usernames = new Map<string, string>();
+  const secondWallet = input.participants.find((p) => p.role === "mule")?.address ?? "(the second wallet)";
 
-  for (const p of input.participants) {
+  for (const [k, p] of input.participants.entries()) {
+    const profile = profileFor(k + 1);
     const password = generateCardPassword();
     passwords.set(p.id, password);
-    const username = usernames.get(p.id)!;
+    usernames.set(p.id, profile.username);
     await client.query(
       `INSERT INTO participants (id, scenario_id, display_name, role, wallet_address, password_hash, username)
        VALUES ($1, $2, $3, $4, $5, $6, $7)`,
-      [p.id, scenarioId, displayNameFor(username), p.role, p.address, await hashPassword(password), username],
+      [p.id, scenarioId, profile.displayName, p.role, p.address, await hashPassword(password), profile.username],
     );
+    const briefing = briefingFor(p.id, p.role, {
+      frostiesPrice: econ.frostiesPrice,
+      secondWallet,
+      mixerLabel: EXCHANGE2_LABEL,
+    });
     await client.query(
       `INSERT INTO participant_private (scenario_id, participant_id, instructions, is_malicious)
        VALUES ($1, $2, $3, $4)`,
-      [scenarioId, p.id, DEFAULT_INSTRUCTIONS[p.role], p.id === input.maliciousCreator],
+      [scenarioId, p.id, briefing, p.id === input.maliciousCreator],
     );
     await client.query("INSERT INTO known_addresses (scenario_id, address, public_label) VALUES ($1, $2, $3)", [
       scenarioId,
       p.address,
-      p.id,
+      profile.explorerLabel,
     ]);
   }
 
   await client.query(
-    `INSERT INTO known_addresses (scenario_id, address, public_label)
-     VALUES ($1, $2, 'Exchange 1'), ($1, $3, 'Exchange 2')`,
-    [scenarioId, input.exchange1, input.exchange2],
+    `INSERT INTO known_addresses (scenario_id, address, public_label) VALUES ($1, $2, $3), ($1, $4, $5)`,
+    [scenarioId, input.exchange1, EXCHANGE1_LABEL, input.exchange2, EXCHANGE2_LABEL],
   );
-  for (const [role, amounts] of Object.entries(DEFAULT_FUNDING)) {
+  for (const [role, amounts] of Object.entries(econ.funding)) {
     await client.query("INSERT INTO funding_plan (scenario_id, role, gas_wei, scenario_wei) VALUES ($1, $2, $3, $4)", [
       scenarioId,
       role,

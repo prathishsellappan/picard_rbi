@@ -5,8 +5,9 @@ import { getProvider } from "./chain";
 import { query, queryOne } from "./db";
 
 // Read side of the explorer. Lists come from the indexed tables (scenario addresses only);
-// a single transaction is always read live from the chain. Labels are neutral: participant
-// IDs, "Exchange 1/2", contract names and project names, never roles.
+// a single transaction is always read live from the chain. Wallet labels are set by the organizer
+// (known_addresses.public_label; an empty label means the wallet is shown by address only, like the
+// unnamed second wallet in the Frosties lab). Roles and the malicious flag are never shown.
 
 export type Labels = Map<string, string>; // lowercase address → label
 
@@ -16,7 +17,7 @@ export async function getLabels(scenarioId: number): Promise<Labels> {
     "SELECT address, public_label FROM known_addresses WHERE scenario_id = $1",
     [scenarioId],
   );
-  for (const k of known) labels.set(k.address.toLowerCase(), k.public_label);
+  for (const k of known) if (k.public_label.trim()) labels.set(k.address.toLowerCase(), k.public_label);
 
   const scenario = await queryOne<{
     factory_address: string | null;
@@ -25,14 +26,14 @@ export async function getLabels(scenarioId: number): Promise<Labels> {
   }>("SELECT factory_address, marketplace_address, nft_address FROM scenarios WHERE id = $1", [scenarioId]);
   if (scenario?.factory_address) labels.set(scenario.factory_address.toLowerCase(), "ProjectFactory");
   if (scenario?.marketplace_address) labels.set(scenario.marketplace_address.toLowerCase(), "Marketplace");
-  if (scenario?.nft_address) labels.set(scenario.nft_address.toLowerCase(), "ScenarioNFT");
+  if (scenario?.nft_address) labels.set(scenario.nft_address.toLowerCase(), "NFT collection");
 
   const projects = await query<{ project: string; name: string }>(
     `SELECT args->>'project' AS project, args->>'name' AS name FROM chain_events
       WHERE scenario_id = $1 AND event_name = 'ProjectCreated'`,
     [scenarioId],
   );
-  for (const p of projects) labels.set(p.project.toLowerCase(), `Project: ${p.name}`);
+  for (const p of projects) labels.set(p.project.toLowerCase(), `${p.name} contract`);
   return labels;
 }
 

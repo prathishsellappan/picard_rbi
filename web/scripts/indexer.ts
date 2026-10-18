@@ -43,9 +43,16 @@ process.on("SIGINT", () => {
 
 try {
   do {
-    const result = await indexToHead(db, provider, id, { confirmations: confirmationsFor(chainId) });
-    if (result.txs || result.events) {
-      console.log(`  up to block ${result.toBlock}: +${result.txs} txs, +${result.events} events`);
+    try {
+      const result = await indexToHead(db, provider, id, { confirmations: confirmationsFor(chainId) });
+      if (result.txs || result.events) {
+        console.log(`  up to block ${result.toBlock}: +${result.txs} txs, +${result.events} events`);
+      }
+    } catch (error) {
+      // One-off runs report the failure; the live indexer logs it and retries on the next poll
+      // (e.g. a brief RPC outage, or contracts being redeployed).
+      if (once) throw error;
+      console.error(`  indexing failed, retrying: ${(error as Error).message}`);
     }
     if (!once) await new Promise((r) => setTimeout(r, 4000));
   } while (!once && !stopping);

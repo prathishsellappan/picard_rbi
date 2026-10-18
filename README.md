@@ -2,6 +2,8 @@
 
 An educational role-play that walks 15 participants through a simulated NFT-project fraud on a
 local Ethereum network or Sepolia, leaving public on-chain evidence for a later investigation.
+The scenario re-enacts the **Frosties** NFT case (January 2022). Its explorer names follow the
+PICARD lab: `Contract creator`, `Frosties contract`, `Buyer 1`…, and an unnamed second wallet.
 **Test assets only. Nothing here has monetary value. Mainnet is refused.**
 
 ## Run it on this computer

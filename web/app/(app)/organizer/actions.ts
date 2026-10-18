@@ -46,6 +46,8 @@ const participantSchema = z.object({
       "Login username: 3–32 lowercase letters/digits, starting with a letter (e.g. investor3)",
     ),
   displayName: z.string().trim().min(1).max(80),
+  // Public explorer label; empty = shown by address only.
+  explorerLabel: z.string().trim().max(40, "Explorer label: at most 40 characters").default(""),
   role: z.enum(PARTICIPANT_ROLES),
   walletAddress: z.string(),
   instructions: z.string().max(4000).default(""),
@@ -58,6 +60,7 @@ function readParticipantForm(formData: FormData) {
     id: formData.get("id"),
     username: formData.get("username"),
     displayName: formData.get("displayName"),
+    explorerLabel: formData.get("explorerLabel") ?? "",
     role: formData.get("role"),
     walletAddress: formData.get("walletAddress"),
     instructions: formData.get("instructions") ?? "",
@@ -87,6 +90,11 @@ export async function updateParticipantAction(_prev: ActionResult, formData: For
     if (exchangeClash) return fail(exchangeClash);
 
     const found = await transaction(async (q) => {
+      const previous = await q<{ wallet_address: string }>(
+        "SELECT wallet_address FROM participants WHERE scenario_id = $1 AND id = $2",
+        [scenarioId, p.id],
+      );
+      if (previous.length === 0) return false;
       const updated = await q(
         `UPDATE participants SET display_name = $3, role = $4, wallet_address = $5, username = $6
           WHERE scenario_id = $1 AND id = $2 RETURNING id`,
@@ -101,11 +109,15 @@ export async function updateParticipantAction(_prev: ActionResult, formData: For
                      organizer_notes = EXCLUDED.organizer_notes`,
         [scenarioId, p.id, p.instructions, p.isMalicious, p.organizerNotes],
       );
-      await q("DELETE FROM known_addresses WHERE scenario_id = $1 AND public_label = $2", [scenarioId, p.id]);
+      await q("DELETE FROM known_addresses WHERE scenario_id = $1 AND lower(address) IN (lower($2), lower($3))", [
+        scenarioId,
+        previous[0].wallet_address,
+        wallet,
+      ]);
       await q("INSERT INTO known_addresses (scenario_id, address, public_label) VALUES ($1, $2, $3)", [
         scenarioId,
         wallet,
-        p.id,
+        p.explorerLabel,
       ]);
       return true;
     });
@@ -145,7 +157,7 @@ export async function createParticipantAction(_prev: ActionResult, formData: For
       await q("INSERT INTO known_addresses (scenario_id, address, public_label) VALUES ($1, $2, $3)", [
         scenarioId,
         wallet,
-        p.id,
+        p.explorerLabel,
       ]);
     });
     revalidatePath("/organizer", "layout");
@@ -189,6 +201,10 @@ export async function updateScenarioAction(_prev: ActionResult, formData: FormDa
       [scenarioId, exchange1, exchange2],
     );
     if (participantClash) return fail(`An exchange address is already assigned to ${participantClash.id}.`);
+    const exchange1Label = String(formData.get("exchange1Label") ?? "").trim();
+    const exchange2Label = String(formData.get("exchange2Label") ?? "").trim();
+    if (exchange1Label.length > 40 || exchange2Label.length > 40)
+      return fail("Explorer labels: at most 40 characters.");
 
     const minPrice = parseEthAmount(String(formData.get("minMintPrice") ?? ""));
     const maxPrice = parseEthAmount(String(formData.get("maxMintPrice") ?? ""));
@@ -205,18 +221,22 @@ export async function updateScenarioAction(_prev: ActionResult, formData: FormDa
     }
 
     await transaction(async (q) => {
+      // Drop the old exchange label rows (keyed by address) before the addresses change.
+      await q(
+        `DELETE FROM known_addresses k USING scenarios s
+          WHERE k.scenario_id = s.id AND s.id = $1
+            AND lower(k.address) IN (lower(s.exchange1_address), lower(s.exchange2_address))`,
+        [scenarioId],
+      );
       await q(
         `UPDATE scenarios SET exchange1_address = $2, exchange2_address = $3,
               min_mint_price_wei = $4, max_mint_price_wei = $5 WHERE id = $1`,
         [scenarioId, exchange1, exchange2, minPrice.toString(), maxPrice.toString()],
       );
-      await q("DELETE FROM known_addresses WHERE scenario_id = $1 AND public_label IN ('Exchange 1', 'Exchange 2')", [
-        scenarioId,
-      ]);
       await q(
         `INSERT INTO known_addresses (scenario_id, address, public_label)
-       VALUES ($1, $2, 'Exchange 1'), ($1, $3, 'Exchange 2')`,
-        [scenarioId, exchange1, exchange2],
+       VALUES ($1, $2, $3), ($1, $4, $5)`,
+        [scenarioId, exchange1, exchange1Label, exchange2, exchange2Label],
       );
       for (const f of funding) {
         await q(

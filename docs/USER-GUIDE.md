@@ -1,16 +1,16 @@
 # Participant guide
 
-This website is a classroom role-play. Everything happens on a **test network** with test ETH
-that has **no monetary value**. You can't lose real money, and nothing you do here touches a
-real exchange or bank.
+This website is a classroom role-play about an NFT sale called **Frosties**. Everything happens
+on a **test network** with test ETH that has **no monetary value**. You can't lose real money,
+and nothing you do here touches a real exchange or bank.
 
 Read **Part A** first; everyone needs it. Then read the part for your role, which is printed on
 your login card. Your organizer may give you only the sections for your role.
 
 - Part A: logging in, your wallet, and transactions (everyone)
 - Part B: Creator
-- Part C: Investor
-- Part D: Your role's dashboard ("Dashboard" in the menu)
+- Part C: Buyer
+- Part D: The second wallet ("Dashboard" in the menu)
 - Part E: the Explorer (everyone)
 - Part F: troubleshooting
 
@@ -21,7 +21,8 @@ your login card. Your organizer may give you only the sections for your role.
 ### A1. What you get from the organizer
 
 - **A login card** with your **login** and a **password**. The login tells you your role:
-  `creator1`–`creator5`, `investor1`–`investor9`, or `mule`.
+  `frosties` or `creator1`–`creator4` (you run an NFT project), `buyer1`–`buyer9` (you buy NFTs),
+  or `mule` (the second wallet).
 - **A prepared computer or browser.** MetaMask is installed, your assigned wallet is already
   imported, and the right network is selected. You don't create a wallet, and you never type a
   seed phrase or private key.
@@ -36,8 +37,8 @@ different password from your website password.
 2. The yellow bar at the top shows the network: **Local Hardhat** or **Sepolia**. It always says
    *Assets have no monetary value*.
 3. On **Role-play login**, enter:
-   - **Login**: as on your card, for example `investor3`. Upper or lower case and spaces don't
-     matter, so `Investor 3` works too.
+   - **Login**: as on your card, for example `buyer3`. Upper or lower case and spaces don't
+     matter, so `Buyer 3` works too.
    - **Password**: exactly as on your card. Upper and lower case **do** matter.
 4. Click **Log in**. You land on your own dashboard automatically.
 
@@ -45,7 +46,7 @@ If you see **Invalid login or password**, check the password carefully: cards av
 characters such as `0`/`O` and `1`/`l`. Ask the organizer if it still fails, since they can reset it.
 
 Your login lasts up to 12 hours. **Log out** is at the top right. The top bar shows your name
-and login, for example `Investor 3 (investor3)`.
+and login, for example `Buyer 3 (buyer3)`.
 
 ### A3. Connecting your wallet
 
@@ -155,7 +156,7 @@ Blockchain transfers can't be undone, so always check the address before confirm
 
 ---
 
-## Part C — Investor
+## Part C — Buyer
 
 Your menu shows **Marketplace** and **Explorer**.
 
@@ -183,7 +184,7 @@ This lists the NFTs your wallet owns, as recorded by the NFT contract: token num
 
 ---
 
-## Part D — Dashboard (transfer role)
+## Part D — Second wallet
 
 Your menu shows **Dashboard** and **Explorer**.
 
@@ -193,11 +194,14 @@ This lists test ETH that arrived in your wallet: amount, sender, block and trans
 New transfers show up within a few seconds, once the organizer's indexer has picked them up.
 Your current balance is always in the wallet panel.
 
-### D2. Transfer to Exchange 2
+### D2. Transfer to the fixed destination
 
-The recipient is fixed: **Exchange 2**. Its address is shown and you can't change it.
+The panel is called **Transfer to Tornado Cash (mixer stand-in)**, or whatever name the
+organizer gave the destination. The recipient is fixed: its address is shown and you can't
+change it. It's an ordinary test wallet standing in for the mixer; no real mixer is involved.
 
-1. Enter the amount, or click **Max** to send everything except a small gas reserve.
+1. Enter the amount, or click **Max** to send everything except a small gas reserve. Your
+   briefing may ask you to send several round amounts instead of one.
 2. Click **Review transfer**, check the amount, click **Send with MetaMask** and confirm.
 3. Wait for **confirmed**. The transaction hash is shown and also appears in **My transactions**.
 
@@ -215,9 +219,14 @@ Paste a full **wallet or contract address** (`0x` + 40 characters) or a **transa
 
 ### E2. Explorer home
 
-- **Scenario addresses**: every wallet and contract in the role-play. Wallets are labelled
-  neutrally as `P01`…`P15` (not by login name), plus **Exchange 1** and **Exchange 2**. Contracts are labelled by name,
-  and projects show as `Project: <name>`. Click any label to open its page.
+- **Scenario addresses**: the named wallets and contracts in the role-play, for example:
+  - `Contract creator`, `Creator 1`–`Creator 4` and `Buyer 1`–`Buyer 9`;
+  - `Exchange (service wallet)` and `Tornado Cash (mixer stand-in)`;
+  - the `Marketplace` and the `NFT collection`;
+  - each project as `<name> contract`, for example `Frosties contract`.
+
+  Some wallets have **no name** and appear only as an address. Finding out what they are is part
+  of the investigation. Click any name or address to open its page.
 - **Latest scenario transactions**: block, time, transaction, method, from, to, value, status.
 - A line shows how far the index has caught up, for example *Indexed up to block 120*.
 

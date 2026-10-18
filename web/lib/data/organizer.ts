@@ -7,6 +7,7 @@ import type { ParticipantRole } from "../roles";
 export type OrganizerParticipantRow = {
   id: string;
   username: string;
+  explorer_label: string;
   display_name: string;
   role: ParticipantRole;
   wallet_address: string;
@@ -18,11 +19,13 @@ export type OrganizerParticipantRow = {
 export async function listParticipantsForOrganizer(scenarioId: number): Promise<OrganizerParticipantRow[]> {
   return query<OrganizerParticipantRow>(
     `SELECT p.id, p.username, p.display_name, p.role, p.wallet_address,
+            coalesce(k.public_label, '') AS explorer_label,
             coalesce(pp.instructions, '') AS instructions,
             coalesce(pp.is_malicious, FALSE) AS is_malicious,
             coalesce(pp.organizer_notes, '') AS organizer_notes
        FROM participants p
        LEFT JOIN participant_private pp ON pp.scenario_id = p.scenario_id AND pp.participant_id = p.id
+       LEFT JOIN known_addresses k ON k.scenario_id = p.scenario_id AND lower(k.address) = lower(p.wallet_address)
       WHERE p.scenario_id = $1
       ORDER BY p.id`,
     [scenarioId],
@@ -35,6 +38,8 @@ export type OrganizerScenarioRow = {
   chain_id: number;
   exchange1_address: string | null;
   exchange2_address: string | null;
+  exchange1_label: string;
+  exchange2_label: string;
   factory_address: string | null;
   marketplace_address: string | null;
   nft_address: string | null;
@@ -45,10 +50,15 @@ export type OrganizerScenarioRow = {
 
 export async function getScenarioForOrganizer(chainId: number): Promise<OrganizerScenarioRow | null> {
   return queryOne<OrganizerScenarioRow>(
-    `SELECT id, name, chain_id, exchange1_address, exchange2_address, factory_address,
+    `SELECT id, name, chain_id, exchange1_address, exchange2_address,
+            coalesce((SELECT public_label FROM known_addresses k WHERE k.scenario_id = s.id
+                       AND lower(k.address) = lower(s.exchange1_address)), '') AS exchange1_label,
+            coalesce((SELECT public_label FROM known_addresses k WHERE k.scenario_id = s.id
+                       AND lower(k.address) = lower(s.exchange2_address)), '') AS exchange2_label,
+            factory_address,
             marketplace_address, nft_address, start_block::text, min_mint_price_wei::text,
             max_mint_price_wei::text
-       FROM scenarios WHERE is_active AND chain_id = $1`,
+       FROM scenarios s WHERE is_active AND chain_id = $1`,
     [chainId],
   );
 }

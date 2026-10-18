@@ -29,27 +29,28 @@ const ABI = {
   nft: artifact("ScenarioNFT").abi,
 };
 
+// The Frosties case: P01 runs Frosties at the real 0.04 ETH price; the other projects are decoys.
 const PROJECTS: Record<string, { name: string; price: string }> = {
-  P01: { name: "Aurora Pixels", price: "0.01" },
+  P01: { name: "Frosties", price: "0.04" },
   P02: { name: "Tidepool DAO", price: "0.015" },
   P03: { name: "Neon Ledger", price: "0.02" },
-  P04: { name: "Granite Guild", price: "0.005" },
+  P04: { name: "Granite Guild", price: "0.01" },
   P05: { name: "Lumen Labs", price: "0.01" },
 };
-// Which creators' projects each investor mints from (each stays within 0.03 ETH scenario funds).
+// Which creators' projects each buyer mints from (each stays within 0.1 ETH scenario funds).
 const MINTS: Record<string, string[]> = {
-  P06: ["P03", "P01"],
-  P07: ["P03", "P04"],
+  P06: ["P01", "P03"],
+  P07: ["P01", "P04"],
   P08: ["P02", "P01"],
   P09: ["P03", "P04"],
-  P10: ["P05", "P02"],
-  P11: ["P03"],
+  P10: ["P01", "P02"],
+  P11: ["P01"],
   P12: ["P01", "P04", "P05"],
   P13: ["P02", "P04"],
-  P14: ["P03", "P05"],
+  P14: ["P01", "P05"],
 };
 const HONEST_WITHDRAWAL = { creator: "P02", amount: parseEther("0.015") };
-const MALICIOUS = "P03";
+const MALICIOUS = "P01";
 
 type Secrets = {
   scenarioId: number;
@@ -213,7 +214,7 @@ describe("end-to-end role-play (17 wallets)", () => {
       [sid, secrets.exchange1.address],
     );
     expect(rows).toHaveLength(15);
-    const plan = { creator: parseEther("0.05"), investor: parseEther("0.05"), mule: parseEther("0.01") };
+    const plan = { creator: parseEther("0.05"), investor: parseEther("0.12"), mule: parseEther("0.01") };
     for (const p of secrets.participants) {
       expect(rows.find((r) => r.to === p.address.toLowerCase())?.value, p.id).toBe(plan[p.role].toString());
     }
@@ -268,10 +269,11 @@ describe("end-to-end role-play (17 wallets)", () => {
     );
     expect(rows.map((r) => [r.contract_address, r.args.to, r.args.amount])).toEqual([
       [project.P02, wallet.P02.address, HONEST_WITHDRAWAL.amount.toString()],
-      [project.P03, wallet.P03.address, expectedReceived("P03").toString()],
+      [project.P01, wallet.P01.address, expectedReceived("P01").toString()],
     ]);
     for (const creator of Object.keys(PROJECTS)) {
-      const withdrawn = creator === "P02" ? HONEST_WITHDRAWAL.amount : creator === "P03" ? expectedReceived("P03") : 0n;
+      const withdrawn =
+        creator === "P02" ? HONEST_WITHDRAWAL.amount : creator === MALICIOUS ? expectedReceived(MALICIOUS) : 0n;
       expect(await rpc.getBalance(project[creator]), creator).toBe(expectedReceived(creator) - withdrawn);
     }
   });
@@ -349,11 +351,38 @@ describe("end-to-end role-play (17 wallets)", () => {
     );
   });
 
-  it("keeps the storyline hidden in public labels and shows it only to the organizer", async () => {
-    const labels = [...(await getLabels(sid)).values()].join(" ");
-    expect(labels).not.toMatch(/mule|malicious|creator|investor/i);
+  it("uses the Frosties lab names in the explorer and keeps the second wallet unnamed", async () => {
+    const labels = await getLabels(sid);
+    const label = (address: string) => labels.get(address.toLowerCase());
+    expect(label(wallet.P01.address)).toBe("Contract creator");
+    expect(label(project.P01)).toBe("Frosties contract");
+    expect(label(project.P02)).toBe("Tidepool DAO contract");
+    expect(label(wallet.P02.address)).toBe("Creator 1");
+    expect(label(wallet.P06.address)).toBe("Buyer 1");
+    expect(label(secrets.exchange1.address)).toBe("Exchange (service wallet)");
+    expect(label(secrets.exchange2.address)).toBe("Tornado Cash (mixer stand-in)");
+    expect(label(contracts.nft)).toBe("NFT collection");
+    expect(label(wallet.P15.address)).toBeUndefined(); // the unnamed second wallet
+    expect([...labels.values()].join(" ")).not.toMatch(/mule|malicious|second wallet/i);
+    expect(secrets.participants.map((p) => p.username)).toEqual([
+      "frosties",
+      "creator1",
+      "creator2",
+      "creator3",
+      "creator4",
+      "buyer1",
+      "buyer2",
+      "buyer3",
+      "buyer4",
+      "buyer5",
+      "buyer6",
+      "buyer7",
+      "buyer8",
+      "buyer9",
+      "mule",
+    ]);
     const progress = Object.fromEntries((await getParticipantProgress(sid)).map((p) => [p.id, p]));
-    expect(progress.P03).toMatchObject({
+    expect(progress.P01).toMatchObject({
       projectCreated: true,
       withdrawnWei: stolen.toString(),
       sentWei: stolen.toString(),
@@ -366,7 +395,7 @@ describe("end-to-end role-play (17 wallets)", () => {
     ).toBe(18);
 
     console.log(
-      `E2E evidence: ${formatEther(stolen)} ETH  ${project[MALICIOUS]} → ${wallet[MALICIOUS].address} (P03) → ` +
+      `E2E evidence: ${formatEther(stolen)} ETH  ${project[MALICIOUS]} → ${wallet[MALICIOUS].address} (P01) → ` +
         `${secrets.participants[14].address} (P15) → ${secrets.exchange2.address} (Exchange 2)`,
     );
   });

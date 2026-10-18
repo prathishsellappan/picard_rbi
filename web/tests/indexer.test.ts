@@ -152,7 +152,7 @@ describe("explorer queries", () => {
 
   it("labels addresses neutrally", async () => {
     const labels = await getLabels(sid);
-    expect(labels.get(project.toLowerCase())).toBe("Project: Neon Ledger");
+    expect(labels.get(project.toLowerCase())).toBe("Neon Ledger contract");
     expect(labels.get(a[16].toLowerCase())).toBe("Exchange 2");
     expect(labels.get(a[15].toLowerCase())).toBe("P15");
     expect([...labels.values()].join(" ")).not.toMatch(/mule|malicious|creator|investor/i);

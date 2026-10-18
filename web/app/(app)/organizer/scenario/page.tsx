@@ -19,7 +19,7 @@ export default async function OrganizerScenarioPage() {
         <Card title="Exchange addresses (organizer-controlled)">
           <div className="grid gap-3">
             <label className="text-xs">
-              Exchange 1 (initial funding source)
+              Exchange 1 address (initial funding source)
               <input
                 name="exchange1"
                 defaultValue={scenario.exchange1_address ?? ""}
@@ -27,12 +27,20 @@ export default async function OrganizerScenarioPage() {
               />
             </label>
             <label className="text-xs">
-              Exchange 2 (final destination)
+              Exchange 1 explorer label
+              <input name="exchange1Label" defaultValue={scenario.exchange1_label} className={inputClass} />
+            </label>
+            <label className="text-xs">
+              Exchange 2 address (final destination)
               <input
                 name="exchange2"
                 defaultValue={scenario.exchange2_address ?? ""}
                 className={`${inputClass} font-mono`}
               />
+            </label>
+            <label className="text-xs">
+              Exchange 2 explorer label
+              <input name="exchange2Label" defaultValue={scenario.exchange2_label} className={inputClass} />
             </label>
           </div>
         </Card>

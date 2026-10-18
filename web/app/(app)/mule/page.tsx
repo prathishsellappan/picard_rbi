@@ -57,14 +57,14 @@ export default async function MulePage() {
 
         {scenario?.exchange2Address ? (
           <TransferSection
-            title="Transfer to Exchange 2"
+            title={`Transfer to ${scenario.exchange2Label}`}
             kind="mule_transfer"
             rows={txs}
-            fixedRecipient={{ address: scenario.exchange2Address, label: "Exchange 2" }}
+            fixedRecipient={{ address: scenario.exchange2Address, label: scenario.exchange2Label }}
           />
         ) : (
-          <Card title="Transfer to Exchange 2">
-            <p className="text-sm text-red-700">Exchange 2 is not configured yet. Ask the organizer.</p>
+          <Card title="Final transfer">
+            <p className="text-sm text-red-700">The destination wallet is not configured yet. Ask the organizer.</p>
           </Card>
         )}
       </div>
