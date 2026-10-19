@@ -3,6 +3,7 @@
 import { readdir, readFile } from "node:fs/promises";
 import path from "node:path";
 import pg from "pg";
+import { pgConfig } from "../lib/pg-config.ts";
 
 const databaseUrl = process.env.DATABASE_URL;
 if (!databaseUrl) {
@@ -11,7 +12,7 @@ if (!databaseUrl) {
 }
 
 const migrationsDir = path.join(import.meta.dirname, "..", "db", "migrations");
-const client = new pg.Client({ connectionString: databaseUrl });
+const client = new pg.Client(pgConfig(databaseUrl));
 await client.connect();
 
 try {

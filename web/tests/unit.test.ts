@@ -1,11 +1,12 @@
 import { describe, expect, it } from "vitest";
 import { normalizeAddress, sameAddress } from "@/lib/address";
-import { getSupportedChain, parseChainId } from "@/lib/chains";
+import { getSupportedChain, parseChainId, walletRpcUrlFor } from "@/lib/chains";
 import { parseEthAmount } from "@/lib/eth";
 import { formatIST } from "@/lib/time";
+import { pgConfig } from "@/lib/pg-config";
 import { generateCardPassword, hashPassword, verifyPassword } from "@/lib/password";
 import { homePathFor, isAllowed, type SessionUser } from "@/lib/roles";
-import { briefingFor, economicsFor, profileFor } from "@/scripts/lib/scenario-setup";
+import { briefingFor, economicsFor, profileFor, secretPlanFor } from "@/scripts/lib/scenario-setup";
 
 describe("chain allowlist", () => {
   it("accepts local and Sepolia", () => {
@@ -117,16 +118,18 @@ describe("Frosties scenario defaults", () => {
     expect(Number(economicsFor(11155111).maxMintPrice)).toBeGreaterThanOrEqual(0.004);
   });
 
-  it("puts the plan and the second wallet's address only in the Frosties creator's briefing", () => {
-    const ctx = { frostiesPrice: "0.04", secondWallet: "0xSECOND", mixerLabel: "Tornado Cash (mixer stand-in)" };
-    expect(briefingFor("P01", "creator", ctx)).toContain("0xSECOND");
-    for (const [id, role] of [
-      ["P02", "creator"],
-      ["P06", "investor"],
-      ["P15", "mule"],
-    ] as const) {
-      expect(briefingFor(id, role, ctx)).not.toContain("0xSECOND");
-    }
+  it("gives everyone with the same role the same on-screen briefing, with no secret plan", () => {
+    const ctx = { frostiesPrice: "0.04", mixerLabel: "Tornado Cash (mixer stand-in)" };
+    const creator = briefingFor("creator", ctx);
+    expect(creator).not.toMatch(/withdraw everything|secret|0x/i);
+    expect(briefingFor("investor", ctx)).toContain("Frosties (0.04 ETH)");
+    expect(briefingFor("mule", ctx)).toContain("Transfer to Tornado Cash (mixer stand-in)");
+  });
+
+  it("keeps the secret plan, with the second wallet's address, for the organizer", () => {
+    const plan = secretPlanFor({ frostiesPrice: "0.04", secondWallet: "0xSECOND" });
+    expect(plan).toContain("0xSECOND");
+    expect(plan).toMatch(/withdraw everything/);
   });
 });
 
@@ -136,5 +139,38 @@ describe("IST times", () => {
     expect(formatIST("2022-01-09T22:45:42Z")).toBe("10 Jan 2022, 04:15:42 IST"); // crosses midnight
     expect(formatIST(null)).toBe("—");
     expect(formatIST("not a date")).toBe("—");
+  });
+});
+
+describe("Postgres SSL config", () => {
+  it("leaves local connections alone", () => {
+    delete process.env.DATABASE_SSL_CA;
+    expect(pgConfig("postgres://localhost:5432/picard")).toEqual({
+      connectionString: "postgres://localhost:5432/picard",
+    });
+  });
+
+  it("verifies a hosted database against the provided CA and drops conflicting URL SSL settings", () => {
+    process.env.DATABASE_SSL_CA = "-----BEGIN CERTIFICATE-----\\nABC\\n-----END CERTIFICATE-----";
+    const config = pgConfig("postgres://u:p@db.example.test:6543/postgres?sslmode=require&application_name=picard");
+    expect(config.connectionString).toBe("postgres://u:p@db.example.test:6543/postgres?application_name=picard");
+    expect(config.ssl).toEqual({
+      ca: "-----BEGIN CERTIFICATE-----\nABC\n-----END CERTIFICATE-----",
+      rejectUnauthorized: true,
+    });
+    delete process.env.DATABASE_SSL_CA;
+  });
+});
+
+describe("wallet RPC address", () => {
+  const local = getSupportedChain(31337);
+  it("points MetaMask at the computer the page was opened from", () => {
+    expect(walletRpcUrlFor(local, "localhost")).toBe("http://127.0.0.1:8545");
+    expect(walletRpcUrlFor(local, "127.0.0.1")).toBe("http://127.0.0.1:8545");
+    expect(walletRpcUrlFor(local, "10.42.81.56")).toBe("http://10.42.81.56:8545");
+    expect(walletRpcUrlFor(local)).toBe("http://127.0.0.1:8545");
+  });
+  it("leaves Sepolia to MetaMask's built-in network", () => {
+    expect(walletRpcUrlFor(getSupportedChain(11155111), "picard.example.test")).toBeNull();
   });
 });

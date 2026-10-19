@@ -4,7 +4,7 @@ import { formatEther } from "ethers";
 import { useEffect, useState } from "react";
 import { Card, Mono, buttonClass } from "@/components/ui";
 import { shortAddress } from "@/lib/address";
-import { getConfiguredChain } from "@/lib/chains";
+import { getConfiguredChain, walletRpcUrlFor } from "@/lib/chains";
 import { statusMessage, useWallet } from "./WalletProvider";
 
 export function WalletPanel() {
@@ -106,13 +106,15 @@ export function useBalance(address: string | null): bigint | null {
 // the expected network by hand if the Switch button can't.
 function NetworkHelp({ currentChainId }: { currentChainId: number | null }) {
   const chain = getConfiguredChain();
+  // Only rendered after the wallet check in the browser, so window is available.
+  const rpcUrl = walletRpcUrlFor(chain, typeof window === "undefined" ? undefined : window.location.hostname);
   return (
     <div className="mt-3 rounded-[9px] border border-line-strong bg-paper-deep/60 p-3 text-[13px] text-ink-soft">
       <p>
         MetaMask is on chain ID <strong>{currentChainId ?? "unknown"}</strong>; this role-play uses{" "}
         <strong>{chain.id}</strong>. Click <strong>Switch to {chain.name}</strong>. If that doesn&apos;t work:
       </p>
-      {chain.walletRpcUrl ? (
+      {rpcUrl ? (
         <>
           <p className="mt-2">
             In MetaMask open the network menu → <strong>Add a custom network</strong> (or Settings → Networks → Add
@@ -122,7 +124,7 @@ function NetworkHelp({ currentChainId }: { currentChainId: number | null }) {
             <dt className="text-ink-muted">Network name</dt>
             <dd>{chain.name}</dd>
             <dt className="text-ink-muted">RPC URL</dt>
-            <dd className="font-mono">{chain.walletRpcUrl}</dd>
+            <dd className="font-mono">{rpcUrl}</dd>
             <dt className="text-ink-muted">Chain ID</dt>
             <dd className="font-mono">{chain.id}</dd>
             <dt className="text-ink-muted">Currency symbol</dt>

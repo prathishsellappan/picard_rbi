@@ -91,6 +91,43 @@ If you only close the website tab, nothing stops. The terminal keeps everything 
 
 ---
 
+### Letting other devices on the same network join
+
+To let phones or laptops on the **same Wi-Fi** use the role-play, start it in network mode
+instead:
+
+```bash
+npm run local:lan
+```
+
+The ready box then also prints the addresses for other devices, for example:
+
+```
+ Other devices on the same Wi-Fi / network:
+   App:          http://10.42.81.56:3000
+   MetaMask RPC: http://10.42.81.56:8545   (chain ID 31337)
+```
+
+On each other device:
+1. Install MetaMask in **Firefox or Chrome**. Safari has no MetaMask.
+2. Open the **App** address shown, for example `http://10.42.81.56:3000`, not `localhost`. On
+   another device `localhost` means that device itself.
+3. Log in, click **Connect MetaMask**, then **Switch to Local Hardhat**. The app offers MetaMask
+   the right network address automatically. To add it by hand: RPC URL `http://10.42.81.56:8545`,
+   chain ID `31337`, symbol `ETH`.
+4. Import that participant's key from `organizer-secrets/local-wallet-keys.csv` (send it to the
+   device privately, for example by AirDrop, not by group chat).
+
+Good to know:
+- **The address can change.** Wi-Fi may give this Mac a different address another day; always use
+  the one printed in the ready box. If it changed, restart `npm run local:lan`.
+- **Same network only.** Guest Wi-Fi or "client isolation" networks often block devices from
+  reaching each other. If the other device can't open the page, try a phone hotspot or a home or
+  office network.
+- **Firewall.** If macOS asks whether to accept incoming connections for `node`, click **Allow**.
+- Everyone on that network can reach the test chain. That's fine for test ETH, but use it on a
+  network you trust.
+
 ## 2. Your secret files
 
 Everything private is in `organizer-secrets/`. It is never committed to git, and the files are
@@ -225,23 +262,26 @@ If you change a creator's wallet after deployment, approve the new wallet on the
 
 ### 5.1 Briefings (pre-filled)
 
-Every participant already has a Frosties briefing in their **Instructions** field. Edit them on
-the **Participants** page if you want to.
+The **Your instructions** panel is highlighted on every dashboard. By default, **everyone with the
+same role sees exactly the same text**: all five creators, including `frosties`, get one creator
+briefing, all buyers get one buyer briefing, and the second wallet gets its own. Nothing on screen
+tells the Frosties creator apart from the others.
 
-- **`frosties` (P01):**
-  - create "Frosties" at 0.04 ETH, with a description promising giveaways, early access to a
-    metaverse game and mint passes;
-  - after the buyers have minted, **Withdraw funds → Max**;
-  - straight away, **Send test ETH** the whole amount to the second wallet. Its address is
-    already filled into the briefing.
-- **`creator1`–`creator4`:** run an ordinary project of their own, with a name, a description
-  and a price between 0.01 and 0.05 ETH.
-- **`buyer1`–`buyer9`:** mint one Frosties NFT and one from any other project.
-- **`mule`:** when ETH arrives, forward it with **Transfer to Tornado Cash (mixer stand-in)**,
-  in a few round amounts like the case's fixed-size mixer deposits, keeping a little for gas.
+| Role | On-screen briefing |
+|---|---|
+| Creators (`frosties`, `creator1`–`creator4`) | create an NFT project (name, description, a price in range), watch the numbers, follow the organizer's further instructions in person |
+| Buyers (`buyer1`–`buyer9`) | read the projects; mint from the ones you'd back, for example Frosties and one other; check My NFTs |
+| Second wallet (`mule`) | watch Incoming transfers; forward the ETH with **Transfer to Tornado Cash (mixer stand-in)** in a few round amounts |
 
-The Frosties creator's dashboard looks exactly like the other creators'. Every creator has the
-same **Send test ETH** panel, so nothing on screen gives the role away.
+**The Frosties creator's secret plan is never on screen.** It is in the **Organizer notes** of `frosties`
+(P01) on the **Participants** page, which only you can see:
+- create "Frosties" at 0.04 ETH, promising giveaways, early access to a metaverse game and mint passes;
+- after the buyers have minted, **Withdraw funds → Max**;
+- straight away, **Send test ETH** the whole amount to the second wallet. Its address is in the note.
+
+**Print or copy that note and hand it to the Frosties creator privately**, on paper or in person,
+before the session. You can still edit any participant's on-screen instructions, but keep them
+identical within a role, or the difference itself gives the storyline away.
 
 ### 5.2 Order of play
 

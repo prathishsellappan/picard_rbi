@@ -5,6 +5,7 @@ import { existsSync } from "node:fs";
 import path from "node:path";
 import { network } from "hardhat";
 import pg from "pg";
+import { pgConfig } from "../../../web/lib/pg-config.js";
 
 export const REPO_ROOT = path.resolve(import.meta.dirname, "..", "..", "..");
 export const SUPPORTED_CHAIN_IDS = [31337, 11155111] as const;
@@ -40,7 +41,7 @@ export async function connect() {
 
 export async function openDb(): Promise<pg.Client> {
   if (!process.env.DATABASE_URL) throw new Error("DATABASE_URL is not set (web/.env.local).");
-  const client = new pg.Client({ connectionString: process.env.DATABASE_URL });
+  const client = new pg.Client(pgConfig(process.env.DATABASE_URL));
   await client.connect();
   return client;
 }

@@ -41,10 +41,11 @@ export default async function setup() {
 
   const contractsDir = path.join(import.meta.dirname, "..", "..", "contracts");
   // Contract tests deploy the real compiled contracts onto the throwaway node.
-  execFileSync("npx", ["hardhat", "build"], { cwd: contractsDir, stdio: "ignore" });
+  execFileSync("npx", ["hardhat", "build"], { cwd: contractsDir, stdio: "ignore", shell: process.platform === "win32" });
   const node: ChildProcess = spawn("npx", ["hardhat", "node", "--port", String(TEST_RPC_PORT)], {
     cwd: contractsDir,
     stdio: "ignore",
+    shell: process.platform === "win32", // npx is a .cmd file on Windows
   });
   await waitForRpc(`http://127.0.0.1:${TEST_RPC_PORT}`, 60_000);
 

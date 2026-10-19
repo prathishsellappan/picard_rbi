@@ -3,6 +3,7 @@
 //   npm run indexer -- --once  index up to the current head and exit
 import { JsonRpcProvider } from "ethers";
 import pg from "pg";
+import { pgConfig } from "../lib/pg-config.ts";
 import { confirmationsFor, indexToHead } from "../indexer/core.ts";
 
 const chainId = Number(process.env.NEXT_PUBLIC_CHAIN_ID);
@@ -23,7 +24,7 @@ if (actual !== chainId) {
   process.exit(1);
 }
 
-const db = new pg.Client({ connectionString: process.env.DATABASE_URL });
+const db = new pg.Client(pgConfig(process.env.DATABASE_URL));
 await db.connect();
 const scenario = await db.query<{ id: number; name: string }>(
   "SELECT id, name FROM scenarios WHERE is_active AND chain_id = $1",

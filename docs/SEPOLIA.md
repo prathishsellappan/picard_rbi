@@ -1,5 +1,8 @@
 # Sepolia deployment and rehearsal runbook
 
+> New to this? Follow the detailed beginner version, [DEPLOY-STEP-BY-STEP.md](DEPLOY-STEP-BY-STEP.md).
+> This page is the compact reference.
+
 Sepolia test ETH only. Nothing here touches Mainnet: the app, scripts and Hardhat config accept
 only chain IDs 31337 and 11155111, and every script checks the connected chain before signing.
 
@@ -57,18 +60,26 @@ any change: it compares each role's gas funding with the measured gas at 3× the
 
 ### 3.1 Organizer environment
 
-Point the organizer machine at the hosted database and Sepolia. In `web/.env.local`:
-
-```
-NEXT_PUBLIC_CHAIN_ID=11155111
-RPC_URL=https://eth-sepolia.g.alchemy.com/v2/<key>
-DATABASE_URL=postgres://<user>:<password>@<pooler-host>:6543/postgres?sslmode=require
-```
-
-Then create the tables:
+The Sepolia settings live in their own file, `web/.env.sepolia`, which is gitignored. Your local
+demo keeps using `web/.env.local` unchanged. Create it from the template:
 
 ```bash
-npm run db:migrate
+cp web/.env.sepolia.example web/.env.sepolia
+```
+
+Fill it in:
+- **`RPC_URL`**: your Alchemy Sepolia HTTPS URL.
+- **`DATABASE_URL`**: in Supabase, open **Project Settings → Database → Connection string**, choose
+  **Transaction pooler** (port 6543), and fill in your database password.
+- **`DATABASE_SSL_CA`**: in Supabase, open **Project Settings → Database → SSL Configuration →
+  Download certificate**, then paste the certificate text. Supabase signs its certificates with
+  its own CA, so this is what lets the connection be both encrypted and verified.
+- **`NFT_BASE_URI`**: your hosted app's URL followed by `/api/nft/`.
+
+Every organizer command for Sepolia then goes through the wrapper, which loads that file:
+
+```bash
+npm run sepolia -- db:migrate              # create the tables in the hosted database
 ```
 
 ### 3.2 Organizer secrets in the Hardhat keystore **(you)**
@@ -88,13 +99,19 @@ npx hardhat keystore set ETHERSCAN_API_KEY
 
 ### 3.3 Hosted web app **(you)**
 
-On Vercel (or another Node host), deploy with root directory `web/` and these environment variables:
+On Vercel (or another Node host):
+1. Push the code to your **private** GitHub repo (`git push origin main`).
+2. In Vercel, choose **Add New → Project** and import that repo.
+3. Set **Root Directory** to `web` and keep "Include files outside the root directory" on, since the
+   app is an npm workspace.
+4. Add these environment variables:
 
 | Variable | Value |
 |---|---|
 | `NEXT_PUBLIC_CHAIN_ID` | `11155111` |
 | `RPC_URL` | your Sepolia RPC URL (server-side only) |
-| `DATABASE_URL` | the hosted Postgres pooler URL |
+| `DATABASE_URL` | the hosted Postgres pooler URL (same as in `web/.env.sepolia`) |
+| `DATABASE_SSL_CA` | the Supabase CA certificate text (same as in `web/.env.sepolia`) |
 | `SESSION_TTL_HOURS` | e.g. `12` |
 
 Note the app's URL, for example `https://picard-roleplay.vercel.app`. The NFT metadata route
@@ -107,7 +124,7 @@ Sepolia history can't be erased, and a new scenario keeps runs from mixing.
 
 1. **Provision wallets and logins.** Use your funded Exchange 1 address:
    ```bash
-   npm run provision -- --name "Frosties – Sepolia rehearsal 1" --exchange1 0xYourExchange1
+   npm run sepolia -- provision -- --name "Frosties – Sepolia rehearsal 1" --exchange1 0xYourExchange1
    ```
    Add `--replace` from the second scenario on. The previous scenario is deactivated, not deleted.
    Keys and login cards are written to `organizer-secrets/scenario-<id>-chain-11155111-*`.
@@ -118,29 +135,29 @@ Sepolia history can't be erased, and a new scenario keeps runs from mixing.
    - Check the mint bounds and funding on **Scenario**. Both must be final before step 4.
 3. **Preflight:**
    ```bash
-   npm run preflight:sepolia -w contracts
+   npm run sepolia -- preflight:sepolia -w contracts
    ```
    Fix every `FAIL`, and read every `WARN`.
 4. **Deploy** with the production build profile. The script writes `deployments/11155111.json`;
    commit it, since it's public information the investigation app will use.
    ```bash
-   NFT_BASE_URI=https://<your-app>/api/nft/ npm run deploy:sepolia -w contracts
+   npm run sepolia -- deploy:sepolia -w contracts      # NFT_BASE_URI comes from web/.env.sepolia
    ```
 5. **Verify the source on Etherscan:**
    ```bash
-   npm run verify:sepolia -w contracts
+   npm run sepolia -- verify:sepolia -w contracts
    ```
    Run it again after the creators have created their projects, so the projects get verified too.
 6. **Allow the creators, then fund all 15 wallets from Exchange 1:**
    ```bash
-   npm run register-creators:sepolia -w contracts
-   npm run fund:sepolia -w contracts
-   npm run preflight:sepolia -w contracts
+   npm run sepolia -- register-creators:sepolia -w contracts
+   npm run sepolia -- fund:sepolia -w contracts
+   npm run sepolia -- preflight:sepolia -w contracts
    ```
    Both are safe to re-run. Already-allowed creators and already-funded wallets are skipped.
 7. **Start the indexer** on the organizer machine and leave it running for the whole session:
    ```bash
-   npm run indexer
+   npm run sepolia -- indexer
    ```
 8. **Prepare the devices (you).** On each device:
    - In MetaMask choose **Add account → Import account** and paste that participant's private key
@@ -167,8 +184,8 @@ against what the app shows **and** what Etherscan shows.
 - [ ] The explorer shows the trail: project page (internal movements) → creator → mule → Exchange 2.
       Every **View on Etherscan** link opens the matching Sepolia page.
 - [ ] The organizer progress table matches. Participant views show no roles and no malicious flag.
-- [ ] `npm run verify:sepolia -w contracts` reports every contract verified.
-- [ ] Rerun `preflight:sepolia`, and check the remaining balances are enough for the live run.
+- [ ] `npm run sepolia -- verify:sepolia -w contracts` reports every contract verified.
+- [ ] Rerun `npm run sepolia -- preflight:sepolia -w contracts`, and check the remaining balances are enough for the live run.
 
 ## 6. Live run and afterwards
 

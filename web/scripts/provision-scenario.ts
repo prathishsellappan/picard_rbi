@@ -16,6 +16,7 @@ import { mkdir, writeFile } from "node:fs/promises";
 import path from "node:path";
 import { Wallet, getAddress, isAddress } from "ethers";
 import pg from "pg";
+import { pgConfig } from "../lib/pg-config.ts";
 import {
   FROSTIES_CREATOR,
   ensureOrganizer,
@@ -63,7 +64,7 @@ const exchange1Wallet = exchange1Arg ? null : Wallet.createRandom();
 const exchange1 = exchange1Arg ? getAddress(exchange1Arg) : exchange1Wallet!.address;
 const exchange2Wallet = Wallet.createRandom();
 
-const client = new pg.Client({ connectionString: process.env.DATABASE_URL });
+const client = new pg.Client(pgConfig(process.env.DATABASE_URL));
 await client.connect();
 
 try {

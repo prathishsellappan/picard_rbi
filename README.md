@@ -13,17 +13,20 @@ npm install
 npm run local
 ```
 
-Then open http://localhost:3000. You need Postgres running (`brew services start postgresql@17`).
+Then open http://localhost:3000. To let other devices on the same Wi-Fi join, use `npm run local:lan` instead (see the organizer guide). You need Postgres running (`brew services start postgresql@17`).
 Login cards are in `organizer-secrets/credentials-local.csv`.
 
 - How to use the website, per role (shareable with participants): [docs/USER-GUIDE.md](docs/USER-GUIDE.md)
 - Running a session as the organizer: [docs/ORGANIZER-GUIDE.md](docs/ORGANIZER-GUIDE.md)
+- Setting it up on another laptop (Windows or macOS, runs offline): [docs/PORTABLE-SETUP.md](docs/PORTABLE-SETUP.md)
+- Running it with Docker (any machine, including AWS): [docs/DOCKER.md](docs/DOCKER.md)
 
 ## Documentation
 
 - Architecture, contract design, payment flow, and decisions: [docs/ARCHITECTURE.md](docs/ARCHITECTURE.md)
 - Contracts, permissions, events: [docs/CONTRACTS.md](docs/CONTRACTS.md)
 - Local setup and running: [docs/SETUP.md](docs/SETUP.md)
+- Putting it online (Vercel + Supabase + Sepolia), step by step for beginners: [docs/DEPLOY-STEP-BY-STEP.md](docs/DEPLOY-STEP-BY-STEP.md)
 - Sepolia deployment, budget and rehearsal runbook: [docs/SEPOLIA.md](docs/SEPOLIA.md)
 - Project rules for contributors and Claude Code: [CLAUDE.md](CLAUDE.md)
 

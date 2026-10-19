@@ -9,6 +9,7 @@ next-env.d.ts
 .env
 .env.*
 !.env.example
+!.env.sepolia.example
 organizer-secrets/
 
 # Hardhat
@@ -23,3 +24,6 @@ deployments/31337.json
 
 # Local run logs
 .local/
+
+# Docker run data (login cards, wallet keys)
+docker-data/

@@ -7,6 +7,15 @@ import type { ParticipantRole, SessionUser } from "./roles";
 
 export const SESSION_COOKIE = "picard_session";
 
+// Browsers only send "Secure" cookies over HTTPS. Production deployments behind HTTPS keep them
+// secure (the default in production); a production build served over plain http — e.g. the Docker
+// image on a LAN or a bare AWS IP — sets COOKIE_SECURE=false, or nobody could stay logged in.
+function secureCookies(): boolean {
+  if (process.env.COOKIE_SECURE === "true") return true;
+  if (process.env.COOKIE_SECURE === "false") return false;
+  return process.env.NODE_ENV === "production";
+}
+
 function hashToken(token: string): string {
   return createHash("sha256").update(token).digest("hex");
 }
@@ -37,7 +46,7 @@ export async function startSession(target: SessionTarget): Promise<void> {
   (await cookies()).set(SESSION_COOKIE, token, {
     httpOnly: true,
     sameSite: "lax",
-    secure: process.env.NODE_ENV === "production",
+    secure: secureCookies(),
     path: "/",
     expires: expiresAt,
   });

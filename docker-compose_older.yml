@@ -1,0 +1,37 @@
+
+services:
+  postgres:
+    image: postgres:17-alpine
+    container_name: picard-postgres
+    environment:
+      POSTGRES_USER: postgres
+      POSTGRES_PASSWORD: picard_password
+      POSTGRES_DB: picard
+    ports:
+      - "5432:5432"
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U postgres -d picard"]
+      interval: 5s
+      timeout: 5s
+      retries: 10
+
+  app:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    container_name: picard-app
+    ports:
+      - "3000:3000"
+      - "8545:8545"
+    environment:
+      DATABASE_URL: postgres://postgres:picard_password@postgres:5432/picard
+      COOKIE_SECURE: "false"
+    depends_on:
+      postgres:
+        condition: service_healthy
+    restart: unless-stopped
+
+volumes:
+  postgres_data:

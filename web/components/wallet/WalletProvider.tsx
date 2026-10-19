@@ -2,7 +2,7 @@
 
 import { BrowserProvider, type JsonRpcSigner } from "ethers";
 import { createContext, useCallback, useContext, useEffect, useMemo, useState, type ReactNode } from "react";
-import { getConfiguredChain } from "@/lib/chains";
+import { getConfiguredChain, walletRpcUrlFor } from "@/lib/chains";
 import {
   evaluateWallet,
   parseChainIdHex,
@@ -142,14 +142,15 @@ export function WalletProvider({ assignedWallet, children }: { assignedWallet: s
       try {
         await eth.request({ method: "wallet_switchEthereumChain", params: [{ chainId: chainIdHex }] });
       } catch (e) {
-        if (walletErrorCode(e) !== 4902 || !chain.walletRpcUrl) throw e;
+        const rpcUrl = walletRpcUrlFor(chain, window.location.hostname);
+        if (walletErrorCode(e) !== 4902 || !rpcUrl) throw e;
         await eth.request({
           method: "wallet_addEthereumChain",
           params: [
             {
               chainId: chainIdHex,
               chainName: chain.name,
-              rpcUrls: [chain.walletRpcUrl],
+              rpcUrls: [rpcUrl],
               nativeCurrency: { name: "Ether", symbol: "ETH", decimals: 18 },
             },
           ],

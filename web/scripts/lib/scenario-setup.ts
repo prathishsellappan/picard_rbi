@@ -74,33 +74,40 @@ export function economicsFor(chainId: number): ChainEconomics {
   };
 }
 
-// Default private briefings. Only the Frosties creator's briefing mentions the plan; it needs the
-// second wallet's address.
-export function briefingFor(
-  id: string,
-  role: Role,
-  ctx: { frostiesPrice: string; secondWallet: string; mixerLabel: string },
-): string {
-  if (id === FROSTIES_CREATOR) {
+// Default on-screen briefings: one text per role, identical for everyone with that role, so the
+// Frosties creator's dashboard can't be told apart from the other creators'. The organizer hands
+// the Frosties creator the secret plan privately (see secretPlanFor, kept in organizer notes).
+export function briefingFor(role: Role, ctx: { frostiesPrice: string; mixerLabel: string }): string {
+  if (role === "creator") {
     return [
-      `You run Frosties, a "utility NFT" collection. Holders are promised giveaways, early access to a`,
-      `metaverse game and mint passes to later "seasons".`,
-      ``,
-      `1. Create your project: name "Frosties", mint price ${ctx.frostiesPrice} ETH, and a description that`,
-      `   sells those promises.`,
-      `2. When the buyers have minted, withdraw everything (Withdraw funds → Max).`,
-      `3. Straight away, send the whole amount with Send test ETH to this wallet:`,
-      `   ${ctx.secondWallet}`,
-      `Don't tell the other participants.`,
+      "1. Create your NFT project: choose a name, write a description of what holders will get, and set a mint price within the allowed range.",
+      "2. Watch your project's numbers as buyers mint.",
+      "3. Follow any further instructions your organizer gives you in person.",
     ].join("\n");
   }
-  if (role === "creator") {
-    return "Create your own NFT project with a name, a description and a mint price within the allowed range. Run it honestly and follow the organizer's briefing.";
-  }
   if (role === "investor") {
-    return `Browse the marketplace. Mint one NFT from Frosties (${ctx.frostiesPrice} ETH) and one from any other project you like.`;
+    return [
+      "1. Browse the marketplace and read each project's description.",
+      `2. Mint NFTs from the projects you'd like to back, for example Frosties (${ctx.frostiesPrice} ETH) and one other.`,
+      "3. Check My NFTs afterwards.",
+    ].join("\n");
   }
-  return `When test ETH arrives in your wallet, forward it with "Transfer to ${ctx.mixerLabel}" in a few round amounts (for example several equal parts). Keep a little for gas.`;
+  return [
+    "1. Watch Incoming transfers for test ETH arriving in your wallet.",
+    `2. When it arrives, forward it with "Transfer to ${ctx.mixerLabel}" in a few round amounts.`,
+    "3. Keep a little for gas.",
+  ].join("\n");
+}
+
+// The Frosties creator's secret plan. Organizer-only (stored in organizer notes, never shown to
+// participants); the organizer gives it to that participant on paper or in person.
+export function secretPlanFor(ctx: { frostiesPrice: string; secondWallet: string }): string {
+  return [
+    "SECRET PLAN for the Frosties creator (give privately):",
+    `1. Create the project "Frosties", mint price ${ctx.frostiesPrice} ETH, promising giveaways, early access to a metaverse game and mint passes to later "seasons".`,
+    "2. When the buyers have minted, withdraw everything (Withdraw funds → Max).",
+    `3. Straight away, send the whole amount with Send test ETH to: ${ctx.secondWallet}`,
+  ].join("\n");
 }
 
 export type ScenarioInput = {
@@ -149,15 +156,13 @@ export async function insertScenario(
        VALUES ($1, $2, $3, $4, $5, $6, $7)`,
       [p.id, scenarioId, profile.displayName, p.role, p.address, await hashPassword(password), profile.username],
     );
-    const briefing = briefingFor(p.id, p.role, {
-      frostiesPrice: econ.frostiesPrice,
-      secondWallet,
-      mixerLabel: EXCHANGE2_LABEL,
-    });
+    const briefing = briefingFor(p.role, { frostiesPrice: econ.frostiesPrice, mixerLabel: EXCHANGE2_LABEL });
+    const malicious = p.id === input.maliciousCreator;
+    const notes = malicious ? secretPlanFor({ frostiesPrice: econ.frostiesPrice, secondWallet }) : "";
     await client.query(
-      `INSERT INTO participant_private (scenario_id, participant_id, instructions, is_malicious)
-       VALUES ($1, $2, $3, $4)`,
-      [scenarioId, p.id, briefing, p.id === input.maliciousCreator],
+      `INSERT INTO participant_private (scenario_id, participant_id, instructions, is_malicious, organizer_notes)
+       VALUES ($1, $2, $3, $4, $5)`,
+      [scenarioId, p.id, briefing, malicious, notes],
     );
     await client.query("INSERT INTO known_addresses (scenario_id, address, public_label) VALUES ($1, $2, $3)", [
       scenarioId,

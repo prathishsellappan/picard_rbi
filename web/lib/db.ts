@@ -1,6 +1,7 @@
 import "server-only";
 import { Pool, type PoolClient, type QueryResultRow } from "pg";
 import { getServerConfig } from "./config";
+import { pgConfig } from "./pg-config";
 
 // One pool per server process. Kept on globalThis so dev hot-reload doesn't leak connections.
 const globalForDb = globalThis as unknown as { picardPool?: Pool };
@@ -10,7 +11,7 @@ function getPool(): Pool {
     // Serverless hosts (Vercel) run many small instances: keep each pool small so a hosted
     // Postgres (e.g. Supabase's pooler) isn't exhausted.
     const max = process.env.VERCEL ? 3 : 10;
-    globalForDb.picardPool = new Pool({ connectionString: getServerConfig().databaseUrl, max });
+    globalForDb.picardPool = new Pool({ ...pgConfig(getServerConfig().databaseUrl), max });
   }
   return globalForDb.picardPool;
 }

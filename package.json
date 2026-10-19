@@ -11,6 +11,7 @@
   },
   "scripts": {
     "local": "node scripts/start-local.mjs",
+    "local:lan": "node scripts/start-local.mjs --lan",
     "dev": "npm run dev -w web",
     "build": "npm run build -w web",
     "lint": "npm run lint -w web",
@@ -20,6 +21,7 @@
     "db:seed": "npm run db:seed -w web --",
     "test:contracts": "npm run test -w contracts",
     "indexer": "npm run indexer -w web --",
-    "provision": "npm run provision -w web --"
+    "provision": "npm run provision -w web --",
+    "sepolia": "node scripts/with-sepolia-env.mjs"
   }
 }

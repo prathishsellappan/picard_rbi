@@ -1,0 +1,19 @@
+# Never put secrets, local data or build output into the image.
+.git
+**/node_modules
+web/.next
+contracts/artifacts
+contracts/cache
+contracts/types
+organizer-secrets
+docker-data
+.local
+**/.env
+**/.env.*
+!web/.env.example
+!web/.env.sepolia.example
+deployments/31337.json
+.claude
+*.log
+Dockerfile*
+compose.y*ml
